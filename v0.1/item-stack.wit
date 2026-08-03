@@ -44,11 +44,6 @@ interface item-stack {
         long-array(list<s64>),
     }
 
-    record nbt-tree {
-        root: u32,
-        tags: list<nbt-tag>,
-    }
-
     resource item-stack {
         constructor(registry-key: string, count: u8);
 
