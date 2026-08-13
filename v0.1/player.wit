@@ -12,6 +12,7 @@ interface player {
     use bedrock-packets.{clientbound-packet as bedrock-packet};
     use uuid.{uuid};
     use status-effect.{status-effect-type, status-effect-instance};
+    use scoreboard.{scoreboard, bedrock-scoreboard};
 
     /// Represents per-player weather condition overrides.
     enum player-weather {
@@ -818,6 +819,18 @@ interface player {
         show-player: func(other: player);
         /// Checks if this player can see another specified player.
         can-see: func(other: player) -> bool;
+        /// Checks if this player can see another specified player.
+        can-see-player: func(other: player) -> bool;
+
+        /// Sets the tab list ping / latency indicator in milliseconds.
+        set-tab-list-ping: func(latency-ms: s32);
+
+        /// Sets a client-side item cooldown overlay.
+        set-item-cooldown: func(item-id: string, ticks: s32);
+        /// Returns the remaining cooldown ticks for an item, if active.
+        get-item-cooldown: func(item-id: string) -> option<s32>;
+        /// Checks if an item is currently on cooldown.
+        has-item-cooldown: func(item-id: string) -> bool;
 
         /// Raycasts from the player's eyes to find the block being targeted.
         get-target-block: func(max-distance: u32) -> option<position>;
@@ -862,6 +875,12 @@ interface player {
 
         /// Clears any currently shown dialog for the player.
         clear-dialog: func();
+
+        /// Returns the Java scoreboard handle for this player.
+        get-scoreboard: func() -> scoreboard;
+
+        /// Resets the player's custom Java scoreboard back to the world scoreboard.
+        reset-scoreboard: func();
     }
 
     /// A handle to a player connected via the Bedrock Edition.
@@ -894,6 +913,12 @@ interface player {
 
         /// Opens a Bedrock custom form for the player.
         open-form: func(form: form) -> u32;
+
+        /// Returns the Bedrock scoreboard handle for this player.
+        get-scoreboard: func() -> bedrock-scoreboard;
+
+        /// Resets the player's custom Bedrock scoreboard back to the world scoreboard.
+        reset-scoreboard: func();
     }
 
     /// Returns a list of all players in a specific world.

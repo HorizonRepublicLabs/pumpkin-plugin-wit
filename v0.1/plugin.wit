@@ -45,6 +45,8 @@ world plugin {
     import status-effect;
     // Provides 1 : 1 inter-plugin communication
     import ipc;
+    /// Provides player management.
+    import player;
 
     // --- Plugin-provided exports ---
 
