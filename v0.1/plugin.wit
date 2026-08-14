@@ -43,6 +43,8 @@ world plugin {
     import java-dialogs;
     /// Provides status effect types and instances.
     import status-effect;
+    /// Provides block entity types and instances.
+    import block-entity;
     // Provides 1 : 1 inter-plugin communication
     import ipc;
     /// Provides player management.
