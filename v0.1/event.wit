@@ -1,6 +1,7 @@
 interface event {
     use common.{block-pos, game-mode, hand, position, click-type};
     use item-stack.{item-stack};
+    use enchantments.{enchantment};
     use player.{player};
     use text.{text-component};
     use %world.{%world};
@@ -423,10 +424,106 @@ interface event {
         cancelled: bool
     }
 
-    record food-level-change-event-data {
+    record entity-air-change-event-data {
         entity-id: s32,
-        food-level: s32,
-        item-name: option<string>,
+        amount: s32,
+        cancelled: bool
+    }
+
+    record entity-breed-event-data {
+        father-id: s32,
+        mother-id: s32,
+        child-id: s32,
+        cancelled: bool
+    }
+
+    record entity-dismount-event-data {
+        entity-id: s32,
+        dismounted-id: s32,
+        cancelled: bool
+    }
+
+    record entity-dye-event-data {
+        entity-id: s32,
+        color: string,
+        player: option<player>,
+        cancelled: bool
+    }
+
+    record entity-enter-love-mode-event-data {
+        entity-id: s32,
+        human-entity-id: option<s32>,
+        ticks-in-love: s32,
+        cancelled: bool
+    }
+
+    record entity-explode-event-data {
+        entity-id: s32,
+        position: position,
+        yield-rate: f32,
+        cancelled: bool
+    }
+
+    record entity-mount-event-data {
+        entity-id: s32,
+        mounted-id: s32,
+        cancelled: bool
+    }
+
+    record entity-pickup-item-event-data {
+        entity-id: s32,
+        item-name: string,
+        count: u8,
+        cancelled: bool
+    }
+
+    record entity-portal-event-data {
+        entity-id: s32,
+        portal-pos: block-pos,
+        cancelled: bool
+    }
+
+    record entity-resurrect-event-data {
+        entity-id: s32,
+        cancelled: bool
+    }
+
+    record entity-shoot-bow-event-data {
+        entity-id: s32,
+        weapon-name: string,
+        force: f32,
+        cancelled: bool
+    }
+
+    record entity-tame-event-data {
+        entity-id: s32,
+        owner: player,
+        cancelled: bool
+    }
+
+    record entity-target-event-data {
+        entity-id: s32,
+        target-id: option<s32>,
+        cancelled: bool
+    }
+
+    record entity-teleport-event-data {
+        entity-id: s32,
+        from-position: position,
+        to-position: position,
+        cancelled: bool
+    }
+
+    record entity-toggle-glide-event-data {
+        entity-id: s32,
+        is-gliding: bool,
+        cancelled: bool
+    }
+
+    record entity-transform-event-data {
+        entity-id: s32,
+        new-entity-id: s32,
+        transform-reason: string,
         cancelled: bool
     }
 
@@ -503,6 +600,61 @@ interface event {
         cancelled: bool
     }
 
+    record block-dispense-event-data {
+        block-pos: block-pos,
+        item-name: string,
+        cancelled: bool
+    }
+
+    record block-explode-event-data {
+        block-pos: block-pos,
+        yield-rate: f32,
+        cancelled: bool
+    }
+
+    record block-physics-event-data {
+        block-pos: block-pos,
+        changed-pos: block-pos,
+        cancelled: bool
+    }
+
+    record block-piston-extend-event-data {
+        block-pos: block-pos,
+        direction: string,
+        cancelled: bool
+    }
+
+    record block-piston-retract-event-data {
+        block-pos: block-pos,
+        direction: string,
+        cancelled: bool
+    }
+
+    record note-play-event-data {
+        block-pos: block-pos,
+        instrument: string,
+        note: u8,
+        cancelled: bool
+    }
+
+    record sign-change-event-data {
+        player: player,
+        block-pos: block-pos,
+        lines: list<string>,
+        cancelled: bool
+    }
+
+    record sponge-absorb-event-data {
+        block-pos: block-pos,
+        cancelled: bool
+    }
+
+    record tnt-prime-event-data {
+        block-pos: block-pos,
+        prime-reason: string,
+        cancelled: bool
+    }
+
     record weather-change-event-data {
         target-world: %world,
         to-weather-state: bool,
@@ -544,6 +696,34 @@ interface event {
         block-pos: block-pos,
         source-item: string,
         result-item: string,
+        cancelled: bool
+    }
+
+    record enchantment-offer {
+        cost: s32,
+        enchantment-id: s32,
+        enchantment-level: s32
+    }
+
+    record prepare-item-enchant-event-data {
+        player: player,
+        item: item-stack,
+        offers: list<enchantment-offer>,
+        bookshelf-count: s32,
+        cancelled: bool
+    }
+
+    record enchantment-value {
+        enchantment: enchantment,
+        level: u32
+    }
+
+    record enchant-item-event-data {
+        player: player,
+        item: item-stack,
+        %option: s32,
+        cost: s32,
+        enchantments-to-add: list<enchantment-value>,
         cancelled: bool
     }
 
@@ -599,7 +779,22 @@ interface event {
         entity-spawn-event,
         entity-combust-event,
         entity-regain-health-event,
-        food-level-change-event,
+        entity-air-change-event,
+        entity-breed-event,
+        entity-dismount-event,
+        entity-dye-event,
+        entity-enter-love-mode-event,
+        entity-explode-event,
+        entity-mount-event,
+        entity-pickup-item-event,
+        entity-portal-event,
+        entity-resurrect-event,
+        entity-shoot-bow-event,
+        entity-tame-event,
+        entity-target-event,
+        entity-teleport-event,
+        entity-toggle-glide-event,
+        entity-transform-event,
         player-item-consume-event,
         player-item-damage-event,
         player-drop-item-event,
@@ -612,6 +807,15 @@ interface event {
         block-from-to-event,
         block-form-event,
         block-fade-event,
+        block-dispense-event,
+        block-explode-event,
+        block-physics-event,
+        block-piston-extend-event,
+        block-piston-retract-event,
+        note-play-event,
+        sign-change-event,
+        sponge-absorb-event,
+        tnt-prime-event,
         weather-change-event,
         thunder-change-event,
         world-load-event,
@@ -620,6 +824,8 @@ interface event {
         inventory-drag-event,
         craft-item-event,
         furnace-smelt-event,
+        prepare-item-enchant-event,
+        enchant-item-event,
     }
 
     variant event {
@@ -674,7 +880,22 @@ interface event {
         entity-spawn-event(entity-spawn-event-data),
         entity-combust-event(entity-combust-event-data),
         entity-regain-health-event(entity-regain-health-event-data),
-        food-level-change-event(food-level-change-event-data),
+        entity-air-change-event(entity-air-change-event-data),
+        entity-breed-event(entity-breed-event-data),
+        entity-dismount-event(entity-dismount-event-data),
+        entity-dye-event(entity-dye-event-data),
+        entity-enter-love-mode-event(entity-enter-love-mode-event-data),
+        entity-explode-event(entity-explode-event-data),
+        entity-mount-event(entity-mount-event-data),
+        entity-pickup-item-event(entity-pickup-item-event-data),
+        entity-portal-event(entity-portal-event-data),
+        entity-resurrect-event(entity-resurrect-event-data),
+        entity-shoot-bow-event(entity-shoot-bow-event-data),
+        entity-tame-event(entity-tame-event-data),
+        entity-target-event(entity-target-event-data),
+        entity-teleport-event(entity-teleport-event-data),
+        entity-toggle-glide-event(entity-toggle-glide-event-data),
+        entity-transform-event(entity-transform-event-data),
         player-item-consume-event(player-item-consume-event-data),
         player-item-damage-event(player-item-damage-event-data),
         player-drop-item-event(player-drop-item-event-data),
@@ -687,6 +908,15 @@ interface event {
         block-from-to-event(block-from-to-event-data),
         block-form-event(block-form-event-data),
         block-fade-event(block-fade-event-data),
+        block-dispense-event(block-dispense-event-data),
+        block-explode-event(block-explode-event-data),
+        block-physics-event(block-physics-event-data),
+        block-piston-extend-event(block-piston-extend-event-data),
+        block-piston-retract-event(block-piston-retract-event-data),
+        note-play-event(note-play-event-data),
+        sign-change-event(sign-change-event-data),
+        sponge-absorb-event(sponge-absorb-event-data),
+        tnt-prime-event(tnt-prime-event-data),
         weather-change-event(weather-change-event-data),
         thunder-change-event(thunder-change-event-data),
         world-load-event(world-load-event-data),
@@ -695,5 +925,7 @@ interface event {
         inventory-drag-event(inventory-drag-event-data),
         craft-item-event(craft-item-event-data),
         furnace-smelt-event(furnace-smelt-event-data),
+        prepare-item-enchant-event(prepare-item-enchant-event-data),
+        enchant-item-event(enchant-item-event-data),
     }
 }
