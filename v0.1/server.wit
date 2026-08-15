@@ -1,10 +1,119 @@
 interface server {
-    use player.{player};
+    use player.{player, ban-player-options, ban-ip-options};
     use common.{game-mode};
     use %world.{%world};
     use text.{text-component};
     use uuid.{uuid};
     use recipe.{recipe-manager};
+    use permission.{permission-level};
+
+    /// Represents an operator entry in the ops configuration.
+    record op-entry {
+        uuid: uuid,
+        name: string,
+        level: permission-level,
+        bypasses-player-limit: bool,
+    }
+
+    /// Interface for querying and managing server operators.
+    resource op-manager {
+        /// Checks if a player UUID is currently an operator.
+        is-op: func(id: uuid) -> bool;
+
+        /// Retrieves the operator entry for a player UUID, if present.
+        get-op: func(id: uuid) -> option<op-entry>;
+
+        /// Gets the effective permission level for a player UUID (returns zero if not op).
+        get-permission-level: func(id: uuid) -> permission-level;
+
+        /// Grants operator status to a player (online or offline) with the specified level and bypass setting.
+        op-player: func(name: string, id: uuid, level: permission-level, bypasses-player-limit: bool);
+
+        /// Revokes operator status from a player (online or offline). Returns true if the player was previously op.
+        deop-player: func(id: uuid) -> bool;
+
+        /// Returns a list of all operator entries on the server.
+        list-ops: func() -> list<op-entry>;
+    }
+
+    /// Represents a banned player entry in the ban list.
+    record banned-player-entry {
+        uuid: uuid,
+        name: string,
+        created: string,
+        source: string,
+        expires: option<string>,
+        reason: string,
+    }
+
+    /// Represents a banned IP entry in the IP ban list.
+    record banned-ip-entry {
+        ip: string,
+        created: string,
+        source: string,
+        expires: option<string>,
+        reason: string,
+    }
+
+    /// Global manager for player and IP bans.
+    resource ban-manager {
+        /// Checks if a player UUID is currently banned.
+        is-player-banned: func(id: uuid) -> bool;
+
+        /// Retrieves the ban entry for a player UUID, if banned.
+        get-player-ban: func(id: uuid) -> option<banned-player-entry>;
+
+        /// Bans a player by name and UUID with the specified options (works for online and offline players).
+        ban-player: func(name: string, id: uuid, options: ban-player-options);
+
+        /// Removes a player ban by UUID. Returns true if the player was banned.
+        unban-player: func(id: uuid) -> bool;
+
+        /// Returns all currently active player bans.
+        list-player-bans: func() -> list<banned-player-entry>;
+
+        /// Checks if an IP address is currently banned.
+        is-ip-banned: func(ip: string) -> bool;
+
+        /// Retrieves the ban entry for an IP address, if banned.
+        get-ip-ban: func(ip: string) -> option<banned-ip-entry>;
+
+        /// Bans an IP address with the specified options.
+        ban-ip: func(ip: string, options: ban-ip-options);
+
+        /// Removes an IP ban. Returns true if the IP was banned.
+        unban-ip: func(ip: string) -> bool;
+
+        /// Returns all currently active IP bans.
+        list-ip-bans: func() -> list<banned-ip-entry>;
+    }
+
+    /// Represents a player entry in the server whitelist.
+    record whitelist-entry {
+        uuid: uuid,
+        name: string,
+    }
+
+    /// Global manager for the server whitelist.
+    resource whitelist-manager {
+        /// Returns whether the whitelist is currently enabled.
+        is-enabled: func() -> bool;
+
+        /// Enables or disables the server whitelist. If enabled and enforce-whitelist is set, kicks non-whitelisted players.
+        set-enabled: func(enabled: bool);
+
+        /// Checks if a player UUID is on the whitelist.
+        is-whitelisted: func(id: uuid) -> bool;
+
+        /// Adds a player to the whitelist (online or offline). Returns true if newly added.
+        add-player: func(name: string, id: uuid) -> bool;
+
+        /// Removes a player from the whitelist. Returns true if the player was on the whitelist.
+        remove-player: func(id: uuid) -> bool;
+
+        /// Returns all whitelisted player entries.
+        list-entries: func() -> list<whitelist-entry>;
+    }
 
     /// Represents the difficulty setting of a Minecraft server.
     enum difficulty {
@@ -118,5 +227,14 @@ interface server {
 
         /// Returns the recipe manager to register custom recipes.
         get-recipe-manager: func() -> recipe-manager;
+
+        /// Returns the operator manager to query or modify server operators.
+        get-op-manager: func() -> op-manager;
+
+        /// Returns the global ban manager for querying and modifying player and IP bans.
+        get-ban-manager: func() -> ban-manager;
+
+        /// Returns the global whitelist manager for querying and modifying the server whitelist.
+        get-whitelist-manager: func() -> whitelist-manager;
     }
 }

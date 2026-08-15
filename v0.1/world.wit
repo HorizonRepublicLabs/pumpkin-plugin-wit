@@ -7,8 +7,22 @@ interface %world {
     use sounds.{sound};
     use entity-types.{entity-type};
     use biomes.{biome};
+    use attributes.{attribute, modifier-operation, attribute-modifier};
+    use item-stack.{item-stack};
 
     use uuid.{uuid};
+
+    /// Equipment slots available on living entities (mobs, armor stands, players).
+    enum equipment-slot {
+        main-hand,
+        off-hand,
+        feet,
+        legs,
+        chest,
+        head,
+        body,
+        saddle,
+    }
 
     /// Defines how a block reacts when pushed by a piston.
     enum piston-behavior {
@@ -223,6 +237,34 @@ interface %world {
 
         get-absorption: func() -> f32;
         set-absorption: func(amount: f32);
+
+        // Attributes
+
+        /// Returns the computed value of the specified attribute for this entity.
+        get-attribute-value: func(attr: attribute) -> f64;
+        /// Returns the base value of the specified attribute for this entity.
+        get-attribute-base: func(attr: attribute) -> f64;
+        /// Sets the base value of the specified attribute for this entity.
+        set-attribute-base: func(attr: attribute, value: f64);
+        /// Adds or replaces an attribute modifier for the specified attribute.
+        add-attribute-modifier: func(attr: attribute, modifier: attribute-modifier);
+        /// Removes an attribute modifier by its identifier.
+        remove-attribute-modifier: func(attr: attribute, id: string);
+        /// Returns all attribute modifiers currently attached to the specified attribute.
+        get-attribute-modifiers: func(attr: attribute) -> list<attribute-modifier>;
+        /// Resets the specified attribute to its default base value with no modifiers.
+        reset-attribute: func(attr: attribute);
+        /// Resets all attributes on this entity to their default base values and removes all modifiers.
+        reset-all-attributes: func();
+
+        // Equipment
+
+        /// Gets the item currently equipped in the specified slot, if any.
+        get-equipment: func(slot: equipment-slot) -> option<item-stack>;
+        /// Sets the item equipped in the specified slot and broadcasts the change to tracking clients.
+        set-equipment: func(slot: equipment-slot, stack: option<item-stack>);
+        /// Clears all equipment on this entity and broadcasts the removal.
+        clear-equipment: func();
 
         get-age: func() -> s32;
         set-age: func(age: s32);

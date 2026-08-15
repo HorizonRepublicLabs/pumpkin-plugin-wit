@@ -561,6 +561,226 @@ interface player {
         is-trusted-skin: bool,
     }
 
+    /// Protocol-level disconnect reasons for Minecraft Bedrock Edition.
+    enum bedrock-disconnect-reason {
+        unknown,
+        cant-connect-no-internet,
+        no-permissions,
+        unrecoverable-error,
+        third-party-blocked,
+        third-party-no-internet,
+        third-party-bad-ip,
+        third-party-no-server-or-server-locked,
+        version-mismatch,
+        skin-issue,
+        invite-session-not-found,
+        edu-level-settings-missing,
+        local-server-not-found,
+        legacy-disconnect,
+        user-leave-game-attempted,
+        platform-locked-skins-error,
+        realms-world-unassigned,
+        realms-server-cant-connect,
+        realms-server-hidden,
+        realms-server-disabled-beta,
+        realms-server-disabled,
+        cross-platform-disabled,
+        cant-connect,
+        session-not-found,
+        client-settings-incompatible-with-server,
+        server-full,
+        invalid-platform-skin,
+        edition-version-mismatch,
+        edition-mismatch,
+        level-newer-than-exe-version,
+        no-fail-occurred,
+        banned-skin,
+        timeout,
+        server-not-found,
+        outdated-server,
+        outdated-client,
+        no-premium-platform,
+        multiplayer-disabled,
+        no-wifi,
+        world-corruption,
+        no-reason,
+        disconnected,
+        invalid-player,
+        logged-in-other-location,
+        server-id-conflict,
+        not-allowed,
+        not-authenticated,
+        invalid-tenant,
+        unknown-packet,
+        unexpected-packet,
+        invalid-command-request-packet,
+        host-suspended,
+        login-packet-no-request,
+        login-packet-no-cert,
+        missing-client,
+        kicked,
+        kicked-for-exploit,
+        kicked-for-idle,
+        resource-pack-problem,
+        incompatible-pack,
+        out-of-storage,
+        invalid-level,
+        disconnect-packet,
+        block-mismatch,
+        invalid-heights,
+        invalid-widths,
+        connection-lost,
+        zombie-connection,
+        shutdown,
+        reason-not-set,
+        loading-state-timeout,
+        resource-pack-loading-failed,
+        searching-for-session-loading-screen-failed,
+        nether-net-protocol-version,
+        subsystem-status-error,
+        empty-auth-from-discovery,
+        empty-url-from-discovery,
+        expired-auth-from-discovery,
+        unknown-signal-service-sign-in-failure,
+        xbl-join-lobby-failure,
+        unspecified-client-instance-disconnection,
+        nether-net-session-not-found,
+        nether-net-create-peer-connection,
+        nether-net-ice,
+        nether-net-connect-request,
+        nether-net-connect-response,
+        nether-net-negotiation-timeout,
+        nether-net-inactivity-timeout,
+        stale-connection-being-replaced,
+        realms-session-not-found,
+        bad-packet,
+        nether-net-failed-to-create-offer,
+        nether-net-failed-to-create-answer,
+        nether-net-failed-to-set-local-description,
+        nether-net-failed-to-set-remote-description,
+        nether-net-negotiation-timeout-waiting-for-response,
+        nether-net-negotiation-timeout-waiting-for-accept,
+        nether-net-incoming-connection-ignored,
+        nether-net-signaling-parsing-failure,
+        nether-net-signaling-unknown-error,
+        nether-net-signaling-unicast-delivery-failed,
+        nether-net-signaling-broadcast-delivery-failed,
+        nether-net-signaling-generic-delivery-failed,
+        editor-mismatch-editor-world,
+        editor-mismatch-vanilla-world,
+        world-transfer-not-primary-client,
+        request-server-shutdown,
+        client-game-setup-cancelled,
+        client-game-setup-failed,
+        no-venue,
+        nether-net-signaling-signin-failed,
+        session-access-denied,
+        service-signin-issue,
+        nether-net-no-signaling-channel,
+        nether-net-not-logged-in,
+        nether-net-client-signaling-error,
+        sub-client-login-disabled,
+        deep-link-trying-to-open-demo-world-while-signed-in,
+        async-join-task-denied,
+        realms-timeline-required,
+        guest-without-host,
+        failed-to-join-experience,
+        nether-net-data-channel-closed,
+        discovery-environment-mismatch,
+        host-without-keys,
+        host-signed-out,
+        script-watchdog-exception,
+        script-memory-limit-exceeded,
+        storage-low-during-gameplay,
+        storage-full-during-gameplay,
+        level-storage-corruption,
+        edition-mismatch-vanilla-to-edu,
+        edition-mismatch-edu-to-vanilla,
+        editor-mismatch-editor-to-vanilla,
+        editor-mismatch-vanilla-to-editor,
+        deny-listed,
+        nonce-missing,
+        nonce-not-found,
+        nonce-expired,
+        nonce-not-valid,
+        host-disconnected,
+        editor-join-intent-policy-failure,
+        nether-net-identity-not-allowed,
+        invalid-name,
+        expired-token,
+        host-accepts-no-type-of-auth,
+        not-authenticated-fast-fail,
+        editor-not-allowed,
+    }
+
+    /// Policy for tearing down the player's network connection.
+    enum socket-teardown-policy {
+        /// Send the disconnect packet and gracefully close the connection.
+        graceful,
+        /// Send the disconnect packet and close the socket immediately.
+        immediate-close,
+        /// Terminate the connection immediately without sending any disconnect packet.
+        drop-connection,
+    }
+
+    /// Options for disconnecting a Java Edition player.
+    record java-kick-options {
+        /// The formatted text component displayed on the Java disconnect screen.
+        reason: text-component,
+        /// Whether to log the kick in the server console (default: true).
+        log-to-console: bool,
+        /// How the connection is closed (default: graceful).
+        teardown-policy: socket-teardown-policy,
+    }
+
+    /// Options for disconnecting a Bedrock Edition player.
+    record bedrock-kick-options {
+        /// Protocol level disconnect code (default: kicked).
+        reason: bedrock-disconnect-reason,
+        /// Message displayed on the Bedrock disconnect screen (default: "").
+        message: string,
+        /// Whether to suppress the disconnect message on the client screen (default: false).
+        skip-message: bool,
+        /// Filtered message string for safety/parental filters (default: "").
+        filtered-message: string,
+        /// Whether to log the kick in the server console (default: true).
+        log-to-console: bool,
+        /// How the connection is closed (default: graceful).
+        teardown-policy: socket-teardown-policy,
+    }
+
+    /// Options for banning a player.
+    record ban-player-options {
+        /// Ban reason displayed to the player and stored in the ban list.
+        reason: option<text-component>,
+        /// Source or authority responsible for the ban (default: "Plugin").
+        source: option<string>,
+        /// Ban expiration in RFC-3339 format, if temporary.
+        expires-at-utc: option<string>,
+        /// Ban duration in seconds from now, if temporary.
+        duration-seconds: option<u64>,
+        /// Whether to immediately kick the player if currently online (default: true).
+        kick-if-online: bool,
+        /// Whether to log the ban action to the server console (default: true).
+        log-to-console: bool,
+    }
+
+    /// Options for banning an IP address.
+    record ban-ip-options {
+        /// Ban reason stored in the IP ban list.
+        reason: option<text-component>,
+        /// Source or authority responsible for the ban (default: "Plugin").
+        source: option<string>,
+        /// Ban expiration in RFC-3339 format, if temporary.
+        expires-at-utc: option<string>,
+        /// Ban duration in seconds from now, if temporary.
+        duration-seconds: option<u64>,
+        /// Whether to immediately kick all online players with this IP (default: true).
+        kick-matching-players: bool,
+        /// Whether to log the IP ban action to the server console (default: true).
+        log-to-console: bool,
+    }
+
     /// A handle to a player on the server.
     resource player {
         /// Returns the player as an entity.
@@ -642,18 +862,16 @@ interface player {
         teleport: func (position: position, yaw: option<f32>, pitch: option<f32>, %world: %world);
         /// Teleports the player to another world at a specific position.
         teleport-world: func (world-ref: %world, position: position, yaw: option<f32>, pitch: option<f32>);
-        /// Kicks the player from the server with the specified reason.
-        kick: func (message: text-component);
         /// Forces the player to respawn.
         respawn: func ();
 
         /// Opens a GUI for the player.
         open-gui: func (gui-ref: gui);
 
-        /// Bans the player with an optional reason.
-        ban: func (reason: option<text-component>);
-        /// Bans the player's IP address with an optional reason.
-        ban-ip: func (reason: option<text-component>);
+        /// Bans the player with the specified options.
+        ban: func (options: ban-player-options);
+        /// Bans the player's IP address with the specified options.
+        ban-ip: func (options: ban-ip-options);
 
         /// Transfers the player to another server.
         transfer: func (host: string, port: u16);
@@ -946,6 +1164,9 @@ interface player {
 
         /// Clears all custom resource packs for the Java player.
         clear-resource-packs: func();
+
+        /// Kicks the Java player with the specified options.
+        kick: func(options: java-kick-options);
     }
 
     /// A handle to a player connected via the Bedrock Edition.
@@ -987,6 +1208,9 @@ interface player {
 
         /// Sends resource packs information to the Bedrock player.
         send-resource-packs-info: func(info: bedrock-resource-packs-info);
+
+        /// Kicks the Bedrock player with the specified options.
+        kick: func(options: bedrock-kick-options);
     }
 
     /// Returns a list of all players in a specific world.

@@ -45,8 +45,10 @@ world plugin {
     import status-effect;
     /// Provides block entity types and instances.
     import block-entity;
-    // Provides 1 : 1 inter-plugin communication
+    /// Provides 1 : 1 inter-plugin communication
     import ipc;
+    /// Provides entity attribute types and modifiers.
+    import attributes;
     /// Provides player management.
     import player;
 
