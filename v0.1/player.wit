@@ -850,6 +850,62 @@ interface player {
         as-bedrock: func() -> option<bedrock-player>;
     }
 
+    /// Represents a resource pack sent to a Java Edition player.
+    record java-resource-pack {
+        /// Unique identifier for the resource pack.
+        id: uuid,
+        /// The URL to the resource pack file.
+        url: string,
+        /// The SHA1 hash (40-character hex string) of the pack.
+        hash: string,
+        /// Whether the player is forced to accept the pack.
+        forced: bool,
+        /// Optional prompt message displayed in the pack acceptance screen.
+        prompt-message: option<text-component>,
+    }
+
+    /// Represents an individual Bedrock Edition resource pack entry.
+    record bedrock-resource-pack-entry {
+        /// Unique identifier for the Bedrock pack.
+        id: uuid,
+        /// Version string of the Bedrock pack (e.g., "1.0.0").
+        version: string,
+        /// Size of the pack in bytes.
+        size: u64,
+        /// Download URL for remote Bedrock packs.
+        download-url: string,
+        /// Optional encryption content key for encrypted packs.
+        content-key: option<string>,
+        /// Optional sub-pack name inside the archive.
+        sub-pack-name: option<string>,
+        /// Optional content identifier.
+        content-id: option<string>,
+        /// Whether the pack contains client scripts.
+        has-scripts: bool,
+        /// Whether the pack is marked as an addon pack.
+        addon-pack: bool,
+        /// Whether Ray Tracing / RTX features are enabled for the pack.
+        rtx-enabled: bool,
+    }
+
+    /// Represents the resource packs information payload sent to Bedrock clients.
+    record bedrock-resource-packs-info {
+        /// If true, players cannot join without accepting packs.
+        required: bool,
+        /// Whether the server offers addon packs.
+        has-addon-packs: bool,
+        /// Whether any of the packs contain client scripts.
+        has-scripts: bool,
+        /// Whether vibrant visuals should be forced disabled.
+        is-vibrant-visuals-force-disabled: bool,
+        /// World template ID, if any.
+        world-template-id: option<uuid>,
+        /// World template version, if any.
+        world-template-version: option<string>,
+        /// List of resource packs to send to the player.
+        packs: list<bedrock-resource-pack-entry>,
+    }
+
     /// A handle to a player connected via the Java Edition.
     resource java-player {
         /// Returns the Minecraft Java Edition version of the player.
@@ -881,6 +937,15 @@ interface player {
 
         /// Resets the player's custom Java scoreboard back to the world scoreboard.
         reset-scoreboard: func();
+
+        /// Sends a resource pack to the Java player.
+        send-resource-pack: func(pack: java-resource-pack);
+
+        /// Removes a specific resource pack by UUID for the Java player.
+        remove-resource-pack: func(id: uuid);
+
+        /// Clears all custom resource packs for the Java player.
+        clear-resource-packs: func();
     }
 
     /// A handle to a player connected via the Bedrock Edition.
@@ -919,6 +984,9 @@ interface player {
 
         /// Resets the player's custom Bedrock scoreboard back to the world scoreboard.
         reset-scoreboard: func();
+
+        /// Sends resource packs information to the Bedrock player.
+        send-resource-packs-info: func(info: bedrock-resource-packs-info);
     }
 
     /// Returns a list of all players in a specific world.
