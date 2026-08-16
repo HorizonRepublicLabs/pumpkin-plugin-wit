@@ -1,5 +1,5 @@
 interface block-entity {
-    use common.{block-pos};
+    use common.{block-pos, nbt-tree};
     use item-stack.{item-stack};
 
     resource block-entity {
@@ -8,6 +8,15 @@ interface block-entity {
         get-id: func() -> u32;
         is-dirty: func() -> bool;
         clear-dirty: func();
+
+        /// Sets a namespaced custom data value on this block entity.
+        set-custom-data: func(namespace: string, key: string, value: nbt-tree);
+        /// Returns a namespaced custom data value from this block entity, if set.
+        get-custom-data: func(namespace: string, key: string) -> option<nbt-tree>;
+        /// Removes a namespaced custom data value from this block entity.
+        remove-custom-data: func(namespace: string, key: string);
+        /// Returns whether this block entity has a namespaced custom data value.
+        has-custom-data: func(namespace: string, key: string) -> bool;
     }
 
     resource container-block-entity {

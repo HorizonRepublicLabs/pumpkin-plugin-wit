@@ -2,6 +2,8 @@ interface event {
     use common.{block-pos, game-mode, hand, position, click-type};
     use item-stack.{item-stack};
     use enchantments.{enchantment};
+    use damage-types.{damage-type};
+    use screens.{screen};
     use player.{player};
     use text.{text-component};
     use %world.{%world};
@@ -208,7 +210,7 @@ interface event {
 
     record inventory-click-event-data {
         player: player,
-        window-type: option<string>,
+        window-type: option<screen>,
         click-type: click-type,
         slot: s16,
         raw-slot: s16,
@@ -220,7 +222,7 @@ interface event {
 
     record inventory-close-event-data {
         player: player,
-        window-type: option<string>
+        window-type: option<screen>
     }
 
     record block-redstone-event-data {
@@ -387,7 +389,7 @@ interface event {
     record entity-damage-event-data {
         entity-id: s32,
         damage: f32,
-        cause: string,
+        damage-type: damage-type,
         cancelled: bool
     }
 

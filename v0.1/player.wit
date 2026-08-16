@@ -13,6 +13,9 @@ interface player {
     use uuid.{uuid};
     use status-effect.{status-effect-type, status-effect-instance};
     use scoreboard.{scoreboard, bedrock-scoreboard};
+    use advancement.{advancement-progress};
+    use damage-types.{damage-type};
+    use statistics.{statistic-category, custom-statistic};
 
     /// Represents per-player weather condition overrides.
     enum player-weather {
@@ -895,10 +898,32 @@ interface player {
 
         /// Heals the player by a specified amount.
         heal: func(amount: f32);
-        /// Deals damage to the player by a specified amount.
-        damage: func(amount: f32);
+        /// Deals damage to the player by a specified amount with a damage type.
+        damage: func(amount: f32, damage-type: damage-type);
         /// Kills the player instantly.
         kill: func();
+
+        // Statistics
+
+        /// Gets the value of a statistic for this player in the given category and ID.
+        get-statistic: func(category: statistic-category, stat-id: s32) -> s32;
+        /// Sets the value of a statistic for this player in the given category and ID.
+        set-statistic: func(category: statistic-category, stat-id: s32, value: s32);
+        /// Increments the value of a statistic for this player in the given category and ID.
+        increment-statistic: func(category: statistic-category, stat-id: s32, amount: s32);
+
+        /// Gets the value of a custom statistic for this player.
+        get-custom-statistic: func(stat: custom-statistic) -> s32;
+        /// Sets the value of a custom statistic for this player.
+        set-custom-statistic: func(stat: custom-statistic, value: s32);
+        /// Increments the value of a custom statistic for this player.
+        increment-custom-statistic: func(stat: custom-statistic, amount: s32);
+
+        /// Sends the player's updated statistics packet to the client.
+        send-stats: func();
+
+        /// Gets the team name that this player belongs to on their active scoreboard, if any.
+        get-team: func() -> option<string>;
 
         // Cooldowns
 
@@ -933,6 +958,17 @@ interface player {
         set-item-in-hand: func (hand: hand, stack: option<item-stack>);
         /// Sets the item in the specified inventory slot.
         set-inventory-item: func (slot: u8, stack: option<item-stack>);
+
+        // Ender Chest Inventory
+
+        /// Returns the item in the specified ender chest slot (0-26).
+        get-ender-chest-item: func (slot: u8) -> option<item-stack>;
+        /// Sets the item in the specified ender chest slot (0-26).
+        set-ender-chest-item: func (slot: u8, stack: option<item-stack>);
+        /// Clears all items from the player's ender chest.
+        clear-ender-chest: func ();
+        /// Opens the player's ender chest inventory screen for them.
+        open-ender-chest: func ();
 
         // Status
 
@@ -1054,6 +1090,39 @@ interface player {
         get-target-block: func(max-distance: u32) -> option<position>;
         /// Launches a projectile from the player's eyes in their line of sight.
         launch-projectile: func(%type: projectile-type) -> option<entity>;
+
+        // Advancements
+
+        /// Returns the progress of the specified advancement for this player, if the advancement exists.
+        get-advancement-progress: func(advancement-id: string) -> option<advancement-progress>;
+
+        /// Awards a specific criterion of an advancement to the player.
+        /// Returns true if the criterion was successfully awarded (was not already completed).
+        award-advancement-criterion: func(advancement-id: string, criterion: string) -> bool;
+
+        /// Revokes a specific criterion of an advancement from the player.
+        /// Returns true if the criterion was successfully revoked (was previously completed).
+        revoke-advancement-criterion: func(advancement-id: string, criterion: string) -> bool;
+
+        /// Awards all criteria of the specified advancement to the player.
+        /// Returns true if any criterion was newly awarded.
+        award-advancement: func(advancement-id: string) -> bool;
+
+        /// Revokes all criteria of the specified advancement from the player.
+        /// Returns true if any criterion was newly revoked.
+        revoke-advancement: func(advancement-id: string) -> bool;
+
+        /// Checks whether the player has completed the specified advancement.
+        has-advancement: func(advancement-id: string) -> bool;
+
+        /// Returns a list of all advancement IDs completed by this player.
+        get-completed-advancements: func() -> list<string>;
+
+        /// Returns the ID of the currently selected advancement tab for this player, if any.
+        get-selected-advancement-tab: func() -> option<string>;
+
+        /// Sets the selected advancement tab for this player (must be a root advancement ID).
+        set-selected-advancement-tab: func(tab-id: option<string>);
 
         /// Returns a Java-specific player handle, if the player is connected via Java Edition.
         ///

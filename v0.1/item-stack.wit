@@ -9,6 +9,12 @@ interface item-stack {
         level: u32,
     }
 
+    /// Represents a custom enchantment and its level on an item stack.
+    record custom-enchantment-value {
+        enchantment-id: string,
+        level: u32,
+    }
+
     /// Represents a data component and its serialized value.
     record data-component-value {
         component: data-component,
@@ -16,33 +22,7 @@ interface item-stack {
         value: list<u8>,
     }
 
-    /// Represents one entry in an NBT compound tag.
-    record nbt-entry {
-        key: string,
-        value: u32,
-    }
-
-    /// Represents a Minecraft NBT tag tree.
-    record nbt-tree {
-        root: u32,
-        tags: list<nbt-tag>,
-    }
-
-    /// Represents a Minecraft NBT tag.
-    variant nbt-tag {
-        byte(s8),
-        short(s16),
-        int(s32),
-        long(s64),
-        float(f32),
-        double(f64),
-        byte-array(list<s8>),
-        string-tag(string),
-        list-tag(list<u32>),
-        compound(list<nbt-entry>),
-        int-array(list<s32>),
-        long-array(list<s64>),
-    }
+    use common.{nbt-entry, nbt-tree, nbt-tag};
 
     resource item-stack {
         constructor(registry-key: string, count: u8);
@@ -64,6 +44,17 @@ interface item-stack {
         add-enchantment: func(enchantment: enchantment, level: u32);
         /// Removes an enchantment from this item stack.
         remove-enchantment: func(enchantment: enchantment);
+
+        /// Returns all custom enchantments on this item stack.
+        get-custom-enchantments: func() -> list<custom-enchantment-value>;
+        /// Adds a custom enchantment to this item stack.
+        add-custom-enchantment: func(enchantment-id: string, level: u32);
+        /// Removes a custom enchantment from this item stack.
+        remove-custom-enchantment: func(enchantment-id: string);
+        /// Returns the level of a custom enchantment on this item stack, if present.
+        get-custom-enchantment-level: func(enchantment-id: string) -> option<u32>;
+        /// Returns whether this item stack has a specific custom enchantment.
+        has-custom-enchantment: func(enchantment-id: string) -> bool;
 
         /// Returns the lore of this item stack.
         get-lore: func() -> list<text-component>;

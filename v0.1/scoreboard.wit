@@ -73,6 +73,11 @@ interface scoreboard {
         add-player-to-team: func(team-name: string, player-name: string);
         remove-player-from-team: func(team-name: string, player-name: string);
         clear-team-players: func(team-name: string);
+
+        get-teams: func() -> list<string>;
+        get-team: func(name: string) -> option<team-settings>;
+        get-team-players: func(team-name: string) -> list<string>;
+        get-player-team: func(player-name: string) -> option<string>;
     }
 
     enum bedrock-sort-order {

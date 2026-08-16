@@ -1,5 +1,5 @@
 interface %world {
-    use common.{position, entity-pose, block-pos};
+    use common.{position, entity-pose, block-pos, nbt-tree};
     use block-entity.{block-entity, command-block-entity, block-entity-type};
     use text.{text-component};
     use scoreboard.{scoreboard};
@@ -9,6 +9,8 @@ interface %world {
     use biomes.{biome};
     use attributes.{attribute, modifier-operation, attribute-modifier};
     use item-stack.{item-stack};
+    use damage-types.{damage-type};
+    use game-rules.{game-rule, game-rule-value};
 
     use uuid.{uuid};
 
@@ -232,7 +234,7 @@ interface %world {
         get-health: func() -> f32;
         set-health: func(health: f32);
         get-max-health: func() -> f32;
-        damage: func(amount: f32);
+        damage: func(amount: f32, damage-type: damage-type);
         is-dead: func() -> bool;
 
         get-absorption: func() -> f32;
@@ -355,6 +357,15 @@ interface %world {
 
         /// Performs a raycast from the entity's eye position in its looking direction.
         raycast: func(max-distance: f64, fluid-handling: bool) -> option<raycast-result>;
+
+        /// Sets a namespaced custom data value on this entity.
+        set-custom-data: func(namespace: string, key: string, value: nbt-tree);
+        /// Returns a namespaced custom data value from this entity, if set.
+        get-custom-data: func(namespace: string, key: string) -> option<nbt-tree>;
+        /// Removes a namespaced custom data value from this entity.
+        remove-custom-data: func(namespace: string, key: string);
+        /// Returns whether this entity has a namespaced custom data value.
+        has-custom-data: func(namespace: string, key: string) -> bool;
     }
 
     /// Result of a raycast operation.
@@ -403,6 +414,15 @@ interface %world {
         /// Gets the block light level at the specified position relative to the chunk.
         /// X and Z must be in the range [0, 15].
         get-block-light: func(pos: block-pos) -> u8;
+
+        /// Sets a namespaced custom data value on this chunk.
+        set-custom-data: func(namespace: string, key: string, value: nbt-tree);
+        /// Returns a namespaced custom data value from this chunk, if set.
+        get-custom-data: func(namespace: string, key: string) -> option<nbt-tree>;
+        /// Removes a namespaced custom data value from this chunk.
+        remove-custom-data: func(namespace: string, key: string);
+        /// Returns whether this chunk has a namespaced custom data value.
+        has-custom-data: func(namespace: string, key: string) -> bool;
     }
 
     /// Represents the boundaries of a world.
@@ -556,6 +576,66 @@ interface %world {
         /// Restores a block entity from raw NBT bytes at the given position.
         /// The NBT must contain a valid "id" field (e.g. "minecraft:chest").
         set-block-entity-nbt: func(pos: block-pos, nbt-data: list<u8>) -> result<_, string>;
+
+        /// Returns the name of this world (e.g. "world", "world_nether", "arena_1").
+        get-name: func() -> string;
+
+        /// Saves all chunk data, block entities, and entities for this world to disk.
+        save: func() -> result<_, string>;
+
+        /// Sets a custom chunk generator for this world using a registered generator ID.
+        set-chunk-generator: func(generator-id: u32);
+
+        /// Sets a namespaced custom data value on this world.
+        set-custom-data: func(namespace: string, key: string, value: nbt-tree);
+        /// Returns a namespaced custom data value from this world, if set.
+        get-custom-data: func(namespace: string, key: string) -> option<nbt-tree>;
+        /// Removes a namespaced custom data value from this world.
+        remove-custom-data: func(namespace: string, key: string);
+        /// Returns whether this world has a namespaced custom data value.
+        has-custom-data: func(namespace: string, key: string) -> bool;
+
+        /// Gets the value of a game rule in this world.
+        get-game-rule: func(rule: game-rule) -> game-rule-value;
+        /// Sets the value of a game rule in this world.
+        set-game-rule: func(rule: game-rule, value: game-rule-value);
+    }
+
+    /// Generation phase for custom chunk generation.
+    enum generation-phase {
+        biomes,
+        noise,
+        surface,
+        features,
+    }
+
+    /// Mutable chunk buffer representing a 16x16 column during custom world generation.
+    resource chunk-buffer {
+        /// Returns the chunk X coordinate.
+        get-x: func() -> s32;
+        /// Returns the chunk Z coordinate.
+        get-z: func() -> s32;
+        /// Returns the minimum Y coordinate for this world.
+        get-min-y: func() -> s32;
+        /// Returns the height of the chunk in blocks.
+        get-height: func() -> u32;
+
+        /// Sets the block state ID at local coordinates (0..16, y, 0..16).
+        set-block-state-id: func(x: u8, y: s32, z: u8, state-id: u16);
+        /// Gets the block state ID at local coordinates (0..16, y, 0..16).
+        get-block-state-id: func(x: u8, y: s32, z: u8) -> u16;
+
+        /// Fills an entire horizontal 16x16 layer at the given Y level with a block state ID.
+        fill-layer: func(y: s32, state-id: u16);
+        /// Fills a vertical column from min-y to max-y at local (x, z) with a block state ID.
+        fill-range: func(x: u8, min-y: s32, max-y: s32, z: u8, state-id: u16);
+        /// Fills a 3D cuboid with a block state ID.
+        fill-cuboid: func(min-x: u8, min-y: s32, min-z: u8, max-x: u8, max-y: s32, max-z: u8, state-id: u16);
+
+        /// Sets the biome at local coordinates (0..16, y, 0..16).
+        set-biome: func(x: u8, y: s32, z: u8, biome: biome);
+        /// Fills the entire chunk with the given biome.
+        fill-biome: func(biome: biome);
     }
 
     /// Resolves a block name and optional properties to a block state ID.

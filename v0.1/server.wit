@@ -5,7 +5,9 @@ interface server {
     use text.{text-component};
     use uuid.{uuid};
     use recipe.{recipe-manager};
+    use enchantments.{enchantment-manager, custom-enchantment};
     use permission.{permission-level};
+    use advancement.{advancement-info};
 
     /// Represents an operator entry in the ops configuration.
     record op-entry {
@@ -180,14 +182,30 @@ interface server {
         /// Returns a list of all worlds on this server.
         get-all-worlds: func() -> list<%world>;
 
-        /// Gets a world by its dimension name (e.g., "minecraft:overworld").
+        /// Gets a world by its dimension name (e.g., "minecraft:overworld") or custom world name (e.g., "world", "arena_1").
         get-world-by-name: func(name: string) -> option<%world>;
+
+        /// Checks if a world exists by name or dimension.
+        has-world: func(name: string) -> bool;
 
         execute-command: func(command: string, sender: command-sender);
 
         /// Creates or loads a world by its name and dimension.
         /// If a world with the given name already exists, it will be returned.
         create-world: func(name: string, dimension: dimension) -> %world;
+
+        /// Unloads and saves a world by its name or dimension.
+        /// Returns an error if the world cannot be found, is the primary/default world, or still has players inside.
+        unload-world: func(name: string) -> result<_, string>;
+
+        /// Saves all players, player advancements, and loaded worlds to disk.
+        save-all: func() -> result<_, string>;
+
+        /// Returns a list of all online players in a specific world.
+        get-players-in-world: func(world-ref: %world) -> list<player>;
+
+        /// Returns the number of online players in a specific world.
+        get-player-count-in-world: func(world-ref: %world) -> u32;
 
         /// Broadcasts a system chat message to all players.
         broadcast: func(message: string);
@@ -236,5 +254,20 @@ interface server {
 
         /// Returns the global whitelist manager for querying and modifying the server whitelist.
         get-whitelist-manager: func() -> whitelist-manager;
+
+        /// Returns detailed information about an advancement by its ID (e.g., "minecraft:story/mine_stone" or "story/mine_stone").
+        get-advancement: func(id: string) -> option<advancement-info>;
+
+        /// Returns a list of all registered advancement IDs on the server.
+        get-all-advancement-ids: func() -> list<string>;
+
+        /// Returns the global enchantment manager for registering and querying custom enchantments.
+        get-enchantment-manager: func() -> enchantment-manager;
+
+        /// Returns information about an enchantment by its ID (vanilla or custom).
+        get-enchantment: func(id: string) -> option<custom-enchantment>;
+
+        /// Returns a list of all registered enchantment IDs (custom and vanilla) on the server.
+        get-all-enchantment-ids: func() -> list<string>;
     }
 }
