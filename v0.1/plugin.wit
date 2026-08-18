@@ -67,8 +67,6 @@ world plugin {
     import display;
     /// Provides game rules definitions and queries.
     import game-rules;
-    /// Provides marketplace public key access for signature verification.
-    import marketplace;
 
     // --- Plugin-provided exports ---
 
