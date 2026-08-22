@@ -42,10 +42,6 @@ interface java-packets {
     key: string,
     payload: option<list<u8>>,
   }
-  record login-s-encryption-response {
-    shared-secret: list<u8>,
-    verify-token: list<u8>,
-  }
   record login-s-login-start {
     name: string,
     uuid: uuid,
@@ -67,6 +63,9 @@ interface java-packets {
   }
   record s-change-game-mode {
     game-mode: string,
+  }
+  record s-chat-ack {
+    offset: s32,
   }
   record s-chat-command {
     command: string,
@@ -112,9 +111,6 @@ interface java-packets {
   record s-command-suggestion {
     id: s32,
     command: string,
-  }
-  record s-confirm-teleport {
-    teleport-id: s32,
   }
   record s-container-button-click {
     window-id: s32,
@@ -176,6 +172,7 @@ interface java-packets {
     z: f64,
     yaw: f32,
     pitch: f32,
+    on-ground: bool,
   }
   record s-paddle-boat {
     left-paddle: bool,
@@ -421,12 +418,6 @@ interface java-packets {
   record login-c-login-cookie-request {
     key: string,
   }
-  record login-c-encryption-request {
-    server-id: string,
-    public-key: list<u8>,
-    verify-token: list<u8>,
-    should-authenticate: bool,
-  }
   record login-c-login-disconnect {
     json-reason: string,
   }
@@ -565,14 +556,6 @@ interface java-packets {
     entity-id: s32,
     metadata: list<u8>,
   }
-  record c-entity-position-sync {
-    entity-id: s32,
-    position: tuple<f64, f64, f64>,
-    delta: tuple<f64, f64, f64>,
-    yaw: f32,
-    pitch: f32,
-    on-ground: bool,
-  }
   record c-entity-sound-effect {
     sound-event: string,
     sound-category: s32,
@@ -653,6 +636,7 @@ interface java-packets {
   record c-map-item-data {
     map-id: s32,
     scale: u8,
+    tracking-position: bool,
     locked: bool,
     icons: option<list<string>>,
     data: option<string>,
@@ -853,6 +837,7 @@ interface java-packets {
   record c-set-entity-link {
     attached-entity-id: s32,
     holding-entity-id: s32,
+    leash: bool,
   }
   record c-set-equipment {
     entity-id: s32,
@@ -916,6 +901,17 @@ interface java-packets {
     head-yaw: u8,
     data: s32,
   }
+  record c-spawn-living-entity {
+    entity-id: s32,
+    entity-uuid: uuid,
+    r-type: s32,
+    position: tuple<f64, f64, f64>,
+    yaw: u8,
+    pitch: u8,
+    head-yaw: u8,
+    velocity: string,
+    metadata: option<list<u8>>,
+  }
   record c-stop-sound {
     sound-id: option<string>,
     category: option<string>,
@@ -926,10 +922,6 @@ interface java-packets {
   }
   record c-subtitle {
     subtitle: string,
-  }
-  record c-system-chat-message {
-    content: string,
-    overlay: bool,
   }
   record c-tab-list {
     header: string,
@@ -965,8 +957,8 @@ interface java-packets {
     port: s32,
   }
   record c-unload-chunk {
-    z: s32,
     x: s32,
+    z: s32,
   }
   record c-update-advancements {
     reset: bool,
@@ -1018,6 +1010,10 @@ interface java-packets {
     display-name: option<string>,
     number-format: option<string>,
   }
+  record c-use-bed {
+    entity-id: s32,
+    location: tuple<s32, s32, s32>,
+  }
   record c-waypoint {
     operation: string,
     waypoint: string,
@@ -1046,7 +1042,6 @@ interface java-packets {
     config-s-config-pong(config-s-config-pong),
     config-s-config-resource-pack(config-s-config-resource-pack),
     login-s-login-cookie-response(login-s-login-cookie-response),
-    login-s-encryption-response(login-s-encryption-response),
     login-s-login-acknowledged,
     login-s-login-start(login-s-login-start),
     login-s-login-plugin-response(login-s-login-plugin-response),
@@ -1054,6 +1049,7 @@ interface java-packets {
     s-block-entity-tag-query(s-block-entity-tag-query),
     s-bundle-item-selected(s-bundle-item-selected),
     s-change-game-mode(s-change-game-mode),
+    s-chat-ack(s-chat-ack),
     s-chat-command(s-chat-command),
     s-chat-message(s-chat-message),
     s-chunk-batch(s-chunk-batch),
@@ -1064,7 +1060,6 @@ interface java-packets {
     s-close-container(s-close-container),
     s-command-suggestion(s-command-suggestion),
     s-configuration-acknowledged,
-    s-confirm-teleport(s-confirm-teleport),
     s-container-button-click(s-container-button-click),
     s-container-slot-state-changed(s-container-slot-state-changed),
     s-cookie-response(s-cookie-response),
@@ -1142,7 +1137,6 @@ interface java-packets {
     config-c-transfer(config-c-transfer),
     config-c-update-tags(config-c-update-tags),
     login-c-login-cookie-request(login-c-login-cookie-request),
-    login-c-encryption-request(login-c-encryption-request),
     login-c-login-disconnect(login-c-login-disconnect),
     login-c-login-plugin-request(login-c-login-plugin-request),
     login-c-set-compression(login-c-set-compression),
@@ -1160,7 +1154,6 @@ interface java-packets {
     c-change-difficulty(c-change-difficulty),
     c-chunk-batch-end(c-chunk-batch-end),
     c-chunk-batch-start,
-    c-chunk-data,
     c-chunks-biomes(c-chunks-biomes),
     c-play-clear-dialog,
     c-clear-title(c-clear-title),
@@ -1182,7 +1175,6 @@ interface java-packets {
     c-display-objective(c-display-objective),
     c-entity-animation(c-entity-animation),
     c-set-entity-metadata(c-set-entity-metadata),
-    c-entity-position-sync(c-entity-position-sync),
     c-entity-sound-effect(c-entity-sound-effect),
     c-entity-status(c-entity-status),
     c-entity-velocity(c-entity-velocity),
@@ -1252,11 +1244,11 @@ interface java-packets {
     c-play-show-dialog(c-play-show-dialog),
     c-sound-effect(c-sound-effect),
     c-spawn-entity(c-spawn-entity),
+    c-spawn-living-entity(c-spawn-living-entity),
     c-start-configuration,
     c-stop-sound(c-stop-sound),
     c-store-cookie(c-store-cookie),
     c-subtitle(c-subtitle),
-    c-system-chat-message(c-system-chat-message),
     c-tab-list(c-tab-list),
     c-tag-query-response(c-tag-query-response),
     c-take-item-entity(c-take-item-entity),
@@ -1273,6 +1265,7 @@ interface java-packets {
     c-update-mob-effect(c-update-mob-effect),
     c-update-objectives(c-update-objectives),
     c-update-score(c-update-score),
+    c-use-bed(c-use-bed),
     c-waypoint(c-waypoint),
     c-world-event(c-world-event),
     status-c-ping-response(status-c-ping-response),

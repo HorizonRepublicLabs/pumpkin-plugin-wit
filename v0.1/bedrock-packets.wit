@@ -547,6 +547,18 @@ interface bedrock-packets {
     %flags: s32,
     layer: s32,
   }
+  record c-update-trade {
+    container-id: u8,
+    r-type: u8,
+    size: s32,
+    trader-tier: s32,
+    entity-unique-id: s64,
+    last-trading-player: s64,
+    display-name: string,
+    use-new-trade-screen: bool,
+    using-economy-trade: bool,
+    data: string,
+  }
   variant serverbound-packet {
     s-actor-event(s-actor-event),
     s-animate(s-animate),
@@ -637,6 +649,7 @@ interface bedrock-packets {
     c-update-abilities(c-update-abilities),
     c-update-attributes(c-update-attributes),
     c-update-block(c-update-block),
+    c-update-trade(c-update-trade),
     unknown,
   }
 }
