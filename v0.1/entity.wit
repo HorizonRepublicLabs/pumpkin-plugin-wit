@@ -1,1 +1,1 @@
-interface entity { use %world.{entity, raycast-result, block-direction}; }
+interface entity { use %world.{entity, raycast-result, ray-trace-block-result, ray-trace-entity-result, block-direction}; }

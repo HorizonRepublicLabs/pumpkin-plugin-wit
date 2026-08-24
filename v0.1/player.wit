@@ -2,7 +2,7 @@
 interface player {
     use common.{hand, position, game-mode};
     use item-stack.{item-stack};
-    use %world.{%world, entity};
+    use %world.{%world, entity, ray-trace-block-result, ray-trace-entity-result};
     use permission.{permission-level};
     use text.{text-component};
     use gui.{gui};
@@ -1086,8 +1086,20 @@ interface player {
         /// Checks if an item is currently on cooldown.
         has-item-cooldown: func(item-id: string) -> bool;
 
+        /// Performs a ray-trace from the player's eye position in looking direction to find the targeted block.
+        ray-trace-block: func(max-distance: f64, include-fluids: bool) -> option<ray-trace-block-result>;
+
+        /// Performs a ray-trace from the player's eye position in looking direction to find the targeted entity.
+        ray-trace-entity: func(max-distance: f64) -> option<ray-trace-entity-result>;
+
+        /// Returns the entity currently targeted in the looking direction within the specified distance.
+        get-target-entity: func(max-distance: f64) -> option<entity>;
+
         /// Raycasts from the player's eyes to find the block being targeted.
         get-target-block: func(max-distance: u32) -> option<position>;
+
+        /// Performs a raycast from the player's eyes to find the exact block and face being targeted.
+        get-target-block-exact: func(max-distance: f64, include-fluids: bool) -> option<ray-trace-block-result>;
         /// Launches a projectile from the player's eyes in their line of sight.
         launch-projectile: func(%type: projectile-type) -> option<entity>;
 
