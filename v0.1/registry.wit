@@ -16,6 +16,14 @@ package pumpkin:plugin@0.1.0;
 /// The window does not reopen, so a hot-reloaded plugin cannot register content. Registered
 /// content needs a server restart.
 interface registry {
+  /// One property a block's state varies over, e.g. `age` with values `0`..`7`.
+  record block-property {
+    /// Property name, exactly as the mod declares it.
+    name: string,
+    /// Every value the property can take, in the mod's own order.
+    values: list<string>,
+  }
+
   /// A block to add to the server's registry.
   record block-definition {
     /// Namespaced id, e.g. `examplemod:ruby_block`. The `minecraft` namespace is reserved.
@@ -28,6 +36,19 @@ interface registry {
     blast-resistance: option<f32>,
     /// Replaces the template's light emission, 0 to 15, when set.
     luminance: option<u8>,
+    /// The properties the block's states vary over.
+    ///
+    /// The number of states is the product of the value counts, and it has to match the
+    /// client's or the two ends disagree about which state is which. Leave this empty for
+    /// a block with a single state; the template's own states are used only when it is.
+    ///
+    /// Minecraft orders a block's states by treating the properties as digits of a number,
+    /// sorted by name with the first varying slowest. Declare them sorted by name to line
+    /// up with the client.
+    properties: list<block-property>,
+    /// Index of the state the block is placed in, into the state list the properties
+    /// describe. Out-of-range values fall back to the first state.
+    default-state: u32,
   }
 
   /// An item to add to the server's registry.
