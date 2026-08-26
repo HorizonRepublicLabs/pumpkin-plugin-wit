@@ -67,6 +67,8 @@ world plugin {
     import display;
     /// Provides game rules definitions and queries.
     import game-rules;
+    /// Provides registration of custom blocks, items and entity types.
+    import registry;
 
     // --- Plugin-provided exports ---
 
