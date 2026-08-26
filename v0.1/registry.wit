@@ -55,6 +55,21 @@ interface registry {
   /// Registers an entity type and returns the id it was assigned.
   register-entity-type: func(definition: entity-type-definition) -> result<u32, string>;
 
+  /// Registers a menu type and returns the id it was assigned.
+  ///
+  /// A menu type tells the client which screen to draw when the server opens a window; the
+  /// drawing itself lives in the mod's client half. The window's slots and what a click
+  /// does remain the server's job.
+  ///
+  /// `id` must be namespaced, e.g. `mysticalagriculture:reprocessor`.
+  register-menu-type: func(id: string) -> result<u32, string>;
+
+  /// Registers a block entity type and returns the id it was assigned.
+  ///
+  /// This gets the type an id and a name, which is enough to survive the protocol. It does
+  /// not give it behaviour.
+  register-block-entity-type: func(id: string) -> result<u32, string>;
+
   /// The protocol phase a network channel is used in.
   enum channel-protocol {
     /// In play, after the client has joined the world. Where most mod traffic lives.
