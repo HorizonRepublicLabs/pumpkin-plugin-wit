@@ -53,7 +53,175 @@ interface %world {
         creeper-ignite,
         eat-grass,
         zombie-attack(f32),
+    }
 
+    /// Node and terrain classification types evaluated during mob pathfinding.
+    enum path-node-type {
+        blocked,
+        open,
+        walkable,
+        walkable-door,
+        trapdoor,
+        powder-snow,
+        danger-powder-snow,
+        fence,
+        lava,
+        water,
+        water-border,
+        rail,
+        unpassable-rail,
+        danger-fire,
+        damage-fire,
+        danger-other,
+        damage-other,
+        door-open,
+        door-wood-closed,
+        door-iron-closed,
+        breach,
+        leaves,
+        sticky-honey,
+        cocoa,
+        damage-cautious,
+        danger-trapdoor,
+    }
+
+    /// Minecraft 16 dye colors.
+    enum dye-color {
+        white,
+        orange,
+        magenta,
+        light-blue,
+        yellow,
+        lime,
+        pink,
+        gray,
+        light-gray,
+        cyan,
+        purple,
+        blue,
+        brown,
+        green,
+        red,
+        black,
+    }
+
+    /// Villager profession identifiers.
+    enum villager-profession {
+        none,
+        armorer,
+        butcher,
+        cartographer,
+        cleric,
+        farmer,
+        fisherman,
+        fletcher,
+        leatherworker,
+        librarian,
+        mason,
+        nitwit,
+        shepherd,
+        toolsmith,
+        weaponsmith,
+    }
+
+    /// Specialized data for sheep entities.
+    record sheep-data {
+        color: dye-color,
+        is-sheared: bool,
+    }
+
+    /// Specialized data for wolf entities.
+    record wolf-data {
+        is-tamed: bool,
+        owner: option<uuid>,
+        is-sitting: bool,
+        collar-color: dye-color,
+        is-angry: bool,
+        is-begging: bool,
+    }
+
+    /// Specialized data for cat entities.
+    record cat-data {
+        is-tamed: bool,
+        owner: option<uuid>,
+        is-sitting: bool,
+        collar-color: dye-color,
+    }
+
+    /// Specialized data for villager entities.
+    record villager-data {
+        profession: villager-profession,
+        level: u8,
+        experience: u32,
+    }
+
+    /// Specialized data for creeper entities.
+    record creeper-data {
+        is-powered: bool,
+        fuse: s32,
+        is-ignited: bool,
+        explosion-radius: u8,
+    }
+
+    /// Specialized data for slime and magma cube entities.
+    record slime-data {
+        size: s32,
+    }
+
+    /// Specialized data for enderman entities.
+    record enderman-data {
+        carried-block-state: option<u16>,
+        is-screaming: bool,
+        is-staring: bool,
+    }
+
+    /// Specialized data for iron golem entities.
+    record iron-golem-data {
+        is-player-created: bool,
+    }
+
+    /// Specialized data for fox entities.
+    record fox-data {
+        is-sitting: bool,
+        is-sleeping: bool,
+        is-crouching: bool,
+    }
+
+    /// Specialized data for ageable animal mobs.
+    record ageable-data {
+        is-baby: bool,
+        age: s32,
+        in-love-ticks: s32,
+    }
+
+    /// Specialized data for zombie entities.
+    record zombie-data {
+        is-baby: bool,
+        can-break-doors: bool,
+    }
+
+    /// Specialized data for shulker entities.
+    record shulker-data {
+        attached-face: block-direction,
+        peek-amount: u8,
+        color: option<dye-color>,
+    }
+
+    /// Tagged variant holding specialized data for specific mob types.
+    variant mob-data {
+        sheep(sheep-data),
+        wolf(wolf-data),
+        cat(cat-data),
+        villager(villager-data),
+        creeper(creeper-data),
+        slime(slime-data),
+        enderman(enderman-data),
+        iron-golem(iron-golem-data),
+        fox(fox-data),
+        ageable(ageable-data),
+        zombie(zombie-data),
+        shulker(shulker-data),
+        generic,
     }
 
     /// Categories for sounds to control their volume independently.
@@ -277,46 +445,6 @@ interface %world {
         get-fire-ticks: func() -> s32;
         set-fire-ticks: func(ticks: s32);
 
-        get-health: func() -> f32;
-        set-health: func(health: f32);
-        get-max-health: func() -> f32;
-        damage: func(amount: f32, damage-type: damage-type);
-        is-dead: func() -> bool;
-
-        get-absorption: func() -> f32;
-        set-absorption: func(amount: f32);
-
-        // Attributes
-
-        /// Returns the computed value of the specified attribute for this entity.
-        get-attribute-value: func(attr: attribute) -> f64;
-        /// Returns the base value of the specified attribute for this entity.
-        get-attribute-base: func(attr: attribute) -> f64;
-        /// Sets the base value of the specified attribute for this entity.
-        set-attribute-base: func(attr: attribute, value: f64);
-        /// Adds or replaces an attribute modifier for the specified attribute.
-        add-attribute-modifier: func(attr: attribute, modifier: attribute-modifier);
-        /// Removes an attribute modifier by its identifier.
-        remove-attribute-modifier: func(attr: attribute, id: string);
-        /// Returns all attribute modifiers currently attached to the specified attribute.
-        get-attribute-modifiers: func(attr: attribute) -> list<attribute-modifier>;
-        /// Resets the specified attribute to its default base value with no modifiers.
-        reset-attribute: func(attr: attribute);
-        /// Resets all attributes on this entity to their default base values and removes all modifiers.
-        reset-all-attributes: func();
-
-        // Equipment
-
-        /// Gets the item currently equipped in the specified slot, if any.
-        get-equipment: func(slot: equipment-slot) -> option<item-stack>;
-        /// Sets the item equipped in the specified slot and broadcasts the change to tracking clients.
-        set-equipment: func(slot: equipment-slot, stack: option<item-stack>);
-        /// Clears all equipment on this entity and broadcasts the removal.
-        clear-equipment: func();
-
-        get-age: func() -> s32;
-        set-age: func(age: s32);
-
         get-fall-distance: func() -> f32;
         set-fall-distance: func(distance: f32);
 
@@ -359,8 +487,6 @@ interface %world {
         set-remaining-air: func(air: s32);
         get-max-air: func() -> s32;
 
-        send-system-message: func(message: text-component);
-
         get-eye-height: func() -> f32;
         get-eye-position: func() -> position;
 
@@ -379,27 +505,6 @@ interface %world {
         is-in-lava: func() -> bool;
 
         remove: func();
-
-        /// Adds a built-in AI goal to this mob entity at the specified priority level.
-        add-ai-goal: func(priority: u8, goal: builtin-ai-goal);
-
-        /// Adds a custom AI goal to this mob entity at the specified priority level.
-        add-custom-ai-goal: func(priority: u8, goal-id: u32);
-
-        /// Removes all AI goals from this mob entity.
-        clear-ai-goals: func();
-
-        /// Sets whether AI execution is disabled for this entity.
-        set-ai-disabled: func(disabled: bool);
-
-        /// Checks if AI execution is disabled for this entity.
-        is-ai-disabled: func() -> bool;
-
-        /// Sets the target entity for this mob.
-        set-target: func(target: option<entity>);
-
-        /// Gets the current target entity of this mob, if any.
-        get-target: func() -> option<entity>;
 
         /// Performs a raycast from the entity's eye position in its looking direction.
         raycast: func(max-distance: f64, fluid-handling: bool) -> option<raycast-result>;
@@ -421,6 +526,98 @@ interface %world {
         remove-custom-data: func(namespace: string, key: string);
         /// Returns whether this entity has a namespaced custom data value.
         has-custom-data: func(namespace: string, key: string) -> bool;
+
+        /// Returns this entity as a living-entity if it has health and attributes, or none otherwise.
+        as-living: func() -> option<living-entity>;
+
+        /// Returns this entity as a mob if it is an AI-driven mob entity, or none otherwise.
+        as-mob: func() -> option<mob>;
+
+        /// Returns whether this entity is a living entity.
+        is-living: func() -> bool;
+
+        /// Returns whether this entity is an AI-driven mob.
+        is-mob: func() -> bool;
+    }
+
+    /// Represents a living entity with health, combat stats, attributes, and equipment (mobs, players, armor stands).
+    resource living-entity {
+        /// Converts back to the base entity handle.
+        as-entity: func() -> entity;
+
+        /// Returns this living entity as a mob if it has AI/navigation, or none otherwise.
+        as-mob: func() -> option<mob>;
+
+        /// Returns whether this living entity is an AI-driven mob.
+        is-mob: func() -> bool;
+
+        // Health & Combat
+        get-health: func() -> f32;
+        set-health: func(health: f32);
+        get-max-health: func() -> f32;
+        set-max-health: func(max-health: f32);
+        damage: func(amount: f32, damage-type: damage-type);
+        is-dead: func() -> bool;
+
+        get-absorption: func() -> f32;
+        set-absorption: func(amount: f32);
+
+        // Attributes
+        get-attribute-value: func(attr: attribute) -> f64;
+        get-attribute-base: func(attr: attribute) -> f64;
+        set-attribute-base: func(attr: attribute, value: f64);
+        add-attribute-modifier: func(attr: attribute, modifier: attribute-modifier);
+        remove-attribute-modifier: func(attr: attribute, id: string);
+        get-attribute-modifiers: func(attr: attribute) -> list<attribute-modifier>;
+        reset-attribute: func(attr: attribute);
+        reset-all-attributes: func();
+
+        // Equipment
+        get-equipment: func(slot: equipment-slot) -> option<item-stack>;
+        set-equipment: func(slot: equipment-slot, stack: option<item-stack>);
+        clear-equipment: func();
+
+        get-age: func() -> s32;
+        set-age: func(age: s32);
+        send-system-message: func(message: text-component);
+    }
+
+    /// Represents an AI-driven mob entity with goals, targeting, and pathfinding navigation (e.g. zombies, villagers).
+    resource mob {
+        /// Converts back to the base entity handle.
+        as-entity: func() -> entity;
+
+        /// Converts to the living-entity handle.
+        as-living: func() -> living-entity;
+
+        // Goals & Targeting
+        add-ai-goal: func(priority: u8, goal: builtin-ai-goal);
+        add-custom-ai-goal: func(priority: u8, goal-id: u32);
+        clear-ai-goals: func();
+        set-ai-disabled: func(disabled: bool);
+        is-ai-disabled: func() -> bool;
+        set-target: func(target: option<entity>);
+        get-target: func() -> option<entity>;
+
+        // Pathfinding & Navigation
+        navigate-to-pos: func(pos: position, speed: f64) -> bool;
+        navigate-to-entity: func(target: entity, speed: f64) -> bool;
+        stop-navigation: func();
+        is-navigating: func() -> bool;
+        has-reached-destination: func() -> bool;
+        set-navigation-speed: func(speed: f64);
+        can-reach: func(pos: position, max-distance: f32) -> bool;
+        set-pathfinding-malus: func(node-type: path-node-type, malus: f32);
+        get-pathfinding-malus: func(node-type: path-node-type) -> f32;
+        look-at: func(pos: position);
+        look-at-entity: func(target: entity);
+
+        /// Returns the specialized mob-specific data for this mob.
+        get-mob-data: func() -> mob-data;
+
+        /// Sets the specialized mob-specific data for this mob.
+        /// Returns false if the provided data variant is incompatible with this mob.
+        set-mob-data: func(data: mob-data) -> bool;
     }
 
     /// Result of a raycast operation.

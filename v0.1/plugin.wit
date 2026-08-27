@@ -55,6 +55,10 @@ world plugin {
     import advancement;
     /// Provides custom recipe registration and management.
     import recipe;
+    /// Provides inventory manipulation and management.
+    import inventory;
+    /// Provides datapack inspection and management.
+    import datapack;
     /// Provides custom enchantment registration and management.
     import enchantments;
     /// Provides damage types.

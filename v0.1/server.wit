@@ -8,6 +8,7 @@ interface server {
     use enchantments.{enchantment-manager, custom-enchantment};
     use permission.{permission-level};
     use advancement.{advancement-info};
+    use datapack.{datapack-manager, datapack-info};
 
     /// Represents an operator entry in the ops configuration.
     record op-entry {
@@ -269,5 +270,8 @@ interface server {
 
         /// Returns a list of all registered enchantment IDs (custom and vanilla) on the server.
         get-all-enchantment-ids: func() -> list<string>;
+
+        /// Returns the global datapack manager for inspecting, enabling, disabling, and reloading datapacks.
+        get-datapack-manager: func() -> datapack-manager;
     }
 }

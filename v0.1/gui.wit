@@ -3,6 +3,7 @@ interface gui {
     use common.{click-type};
     use item-stack.{item-stack};
     use screens.{screen};
+    use inventory.{inventory};
 
     /// A screen a mod draws itself, rather than one of vanilla's.
     ///
@@ -24,6 +25,9 @@ interface gui {
 
         /// Builds a screen drawn by a mod. Fails if the menu type was never registered.
         modded: static func(screen: modded-screen, title: text-component) -> result<gui, string>;
+
+        /// Returns the underlying inventory handle for this GUI.
+        get-inventory: func() -> inventory;
         set-item: func(slot: u32, item: item-stack);
         get-item: func(slot: u32) -> option<item-stack>;
         
