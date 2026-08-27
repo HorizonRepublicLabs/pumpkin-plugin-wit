@@ -4,8 +4,26 @@ interface gui {
     use item-stack.{item-stack};
     use screens.{screen};
 
+    /// A screen a mod draws itself, rather than one of vanilla's.
+    ///
+    /// The client resolves `menu-type` through the registry sync, so the menu has to have
+    /// been registered. `extra-data` is whatever the mod's own menu constructor reads —
+    /// usually a block position, packed the way Minecraft packs one, so the screen knows
+    /// which machine it is looking at.
+    record modded-screen {
+        /// Namespaced id of a registered menu type, e.g. `mysticalagriculture:reprocessor`.
+        menu-type: string,
+        /// Slots the menu has, matching the mod's own container.
+        slots: u32,
+        /// Extra bytes the menu's constructor reads.
+        extra-data: list<u8>,
+    }
+
     resource gui {
         constructor(%type: screen, title: text-component);
+
+        /// Builds a screen drawn by a mod. Fails if the menu type was never registered.
+        modded: static func(screen: modded-screen, title: text-component) -> result<gui, string>;
         set-item: func(slot: u32, item: item-stack);
         get-item: func(slot: u32) -> option<item-stack>;
         
