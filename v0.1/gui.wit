@@ -39,6 +39,16 @@ interface gui {
         /// Clears all items from the GUI.
         clear-items: func();
 
+        /// Sets one of the window's data values, which is how a screen shows anything that
+        /// is not an item: progress bars, fuel gauges, and the like.
+        ///
+        /// Their meaning and order belong to whatever draws the screen. A mod's screen
+        /// reads the ones its own container declared, in that container's order.
+        set-property: func(index: u32, value: s32);
+
+        /// Reads back a data value, or nothing if the index was never set.
+        get-property: func(index: u32) -> option<s32>;
+
         /// Sets whether players can grab items out of the inventory.
         set-allow-grab-items: func(allow: bool);
 
