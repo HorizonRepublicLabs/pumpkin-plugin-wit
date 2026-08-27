@@ -25,6 +25,24 @@ interface registry {
   }
 
   /// A block to add to the server's registry.
+  /// Something a block yields when it is broken.
+  ///
+  /// A crop drops its essence only when grown, and its seed whatever state it is in, so a
+  /// drop names the states it applies to rather than the block as a whole.
+  record block-drop {
+    /// Namespaced id of the item, e.g. `examplemod:ruby`.
+    item: string,
+    /// Fewest dropped. A drop that can yield nothing has a minimum of zero.
+    min: u8,
+    /// Most dropped. Anything between this and the minimum is equally likely.
+    max: u8,
+    /// Index of the first state this applies to, into the state list the properties
+    /// describe. Left unset it applies to every state.
+    from-state: option<u32>,
+    /// Index of the last state this applies to, inclusive. Left unset it runs to the end.
+    to-state: option<u32>,
+  }
+
   record block-definition {
     /// Namespaced id, e.g. `examplemod:ruby_block`. The `minecraft` namespace is reserved.
     id: string,
@@ -55,6 +73,11 @@ interface registry {
     /// and without this nothing can place the block, because the item a template carried
     /// belongs to the template.
     item: option<string>,
+    /// What the block yields when broken.
+    ///
+    /// A block with none drops nothing: the template's own drops belong to the template,
+    /// and a registered block that inherited them would drop the wrong item.
+    drops: list<block-drop>,
     /// The namespaced id of the block entity type placing this block creates, if any.
     ///
     /// Register the type first. A block without one has nowhere to keep anything: a
