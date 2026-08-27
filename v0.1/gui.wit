@@ -3,9 +3,12 @@ interface gui {
     use common.{click-type};
     use item-stack.{item-stack};
     use screens.{screen};
+    use inventory.{inventory};
 
     resource gui {
         constructor(%type: screen, title: text-component);
+        /// Returns the underlying inventory handle for this GUI.
+        get-inventory: func() -> inventory;
         set-item: func(slot: u32, item: item-stack);
         get-item: func(slot: u32) -> option<item-stack>;
         

@@ -16,6 +16,7 @@ interface player {
     use advancement.{advancement-progress};
     use damage-types.{damage-type};
     use statistics.{statistic-category, custom-statistic};
+    use inventory.{inventory, player-inventory};
 
     /// Represents per-player weather condition overrides.
     enum player-weather {
@@ -946,6 +947,11 @@ interface player {
         set-invulnerable: func(invulnerable: bool);
 
         // Inventory
+
+        /// Returns the player's inventory handle for managing main storage, armor, and equipment.
+        get-inventory: func () -> player-inventory;
+        /// Returns the player's ender chest inventory handle.
+        get-ender-chest: func () -> inventory;
 
         /// Returns the index of the currently selected hotbar slot (0-8).
         get-selected-slot: func () -> u8;

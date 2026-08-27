@@ -1,6 +1,7 @@
 interface block-entity {
     use common.{block-pos, nbt-tree};
     use item-stack.{item-stack};
+    use inventory.{inventory};
 
     resource block-entity {
         resource-location: func() -> string;
@@ -21,6 +22,8 @@ interface block-entity {
 
     resource container-block-entity {
         get-block-entity: func() -> block-entity;
+        /// Returns the generic inventory handle for this container.
+        get-inventory: func() -> inventory;
         get-size: func() -> u32;
         is-empty: func() -> bool;
         get-stack: func(slot: u32) -> option<item-stack>;
