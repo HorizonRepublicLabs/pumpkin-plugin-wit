@@ -55,6 +55,13 @@ interface registry {
     /// and without this nothing can place the block, because the item a template carried
     /// belongs to the template.
     item: option<string>,
+    /// The namespaced id of the block entity type placing this block creates, if any.
+    ///
+    /// Register the type first. A block without one has nowhere to keep anything: a
+    /// machine's contents would live only in whatever window happened to be open and go
+    /// when it closed. Leaving this unset inherits the template's, which is what a block
+    /// standing in for a plain material wants.
+    block-entity: option<string>,
   }
 
   /// An item to add to the server's registry.
