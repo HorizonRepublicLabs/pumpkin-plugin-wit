@@ -49,6 +49,12 @@ interface registry {
     /// Index of the state the block is placed in, into the state list the properties
     /// describe. Out-of-range values fall back to the first state.
     default-state: u32,
+    /// The namespaced id of the item that places this block, if it has one.
+    ///
+    /// Register the item first. Not every block has one — a crop is placed by its seeds —
+    /// and without this nothing can place the block, because the item a template carried
+    /// belongs to the template.
+    item: option<string>,
   }
 
   /// An item to add to the server's registry.
