@@ -54,6 +54,11 @@ interface registry {
     blast-resistance: option<f32>,
     /// Replaces the template's light emission, 0 to 15, when set.
     luminance: option<u8>,
+    /// Whether a tool is needed to get anything out of the block, when set.
+    ///
+    /// Left unset the template's rule applies, which is the template's and not the
+    /// block's: a machine standing in for stone is mined like stone.
+    requires-tool: option<bool>,
     /// The properties the block's states vary over.
     ///
     /// The number of states is the product of the value counts, and it has to match the
