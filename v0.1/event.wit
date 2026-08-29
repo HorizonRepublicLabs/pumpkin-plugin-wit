@@ -54,6 +54,7 @@ interface event {
         player: player,
         message: string,
         recipients: list<player>,
+        signature: option<list<u8>>,
         cancelled: bool
     }
 

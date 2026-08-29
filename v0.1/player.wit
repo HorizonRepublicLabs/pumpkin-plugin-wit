@@ -1,6 +1,6 @@
 /// Represents a player connected to the Minecraft server.
 interface player {
-    use common.{hand, position, game-mode};
+    use common.{hand, position, game-mode, block-pos};
     use item-stack.{item-stack};
     use %world.{%world, entity, ray-trace-block-result, ray-trace-entity-result};
     use permission.{permission-level};
@@ -17,6 +17,9 @@ interface player {
     use damage-types.{damage-type};
     use statistics.{statistic-category, custom-statistic};
     use inventory.{inventory, player-inventory};
+    use sounds.{sound, sound-category};
+    use particles.{particle};
+    use entity-statuses.{entity-status};
 
     /// Represents per-player weather condition overrides.
     enum player-weather {
@@ -35,6 +38,50 @@ interface player {
         small-fireball,
         trident,
         wind-charge,
+    }
+
+    /// Types of clientbound game events.
+    enum client-game-event {
+        no-respawn-block-available,
+        begin-raining,
+        end-raining,
+        change-game-mode,
+        win-game,
+        demo-event,
+        arrow-hit-player,
+        rain-level-change,
+        thunder-level-change,
+        play-pufferfish-string-sound,
+        play-elder-guardian-mob-appearance,
+        enabled-respawn-screen,
+        limited-crafting,
+        start-waiting-chunks,
+    }
+
+    /// Built-in known server link types displayed in the client Escape pause menu.
+    enum known-server-link {
+        bug-report,
+        community-guidelines,
+        support,
+        status,
+        feedback,
+        community,
+        website,
+        forums,
+        news,
+        announcements,
+    }
+
+    /// Label for a server link: either a built-in standard link type or a custom text component.
+    variant server-link-label {
+        known(known-server-link),
+        custom(text-component),
+    }
+
+    /// Represents a server link entry with a label and destination URL.
+    record server-link {
+        label: server-link-label,
+        url: string,
     }
 
     /// Various abilities a player can have.
@@ -840,6 +887,10 @@ interface player {
 
         /// Sends a system message to the player's chat.
         send-system-message: func (text: text-component, overlay: bool);
+        /// Deletes a signed chat message from the player's chat window using its 256-byte signature.
+        delete-message-by-signature: func (signature: list<u8>);
+        /// Deletes a signed chat message from the player's chat window using its signature cache ID.
+        delete-message-by-id: func (signature-id: s32);
         /// Sets the header and footer of the player's Tab list.
         set-tab-list-header-footer: func (header: text-component, footer: text-component);
 
@@ -859,6 +910,76 @@ interface player {
         show-actionbar: func (text: text-component);
         /// Sets the fade-in, stay, and fade-out times for titles.
         send-title-animation: func (fade-in: s32, stay: s32, fade-out: s32);
+
+        // Camera & Spectating
+
+        /// Sets the player's camera to view from the perspective of another entity.
+        /// If `entity` is `none`, the camera is reset back to the player.
+        set-camera: func (entity: option<entity>);
+        /// Sets the player's camera to view from the perspective of an entity with the given entity ID.
+        /// If `entity-id` is the player's own entity ID, the camera is reset back to the player.
+        set-camera-entity-id: func (entity-id: u32);
+        /// Gets the entity ID of the entity that the player's camera is currently attached to,
+        /// or the player's own entity ID if the camera has not been overridden.
+        get-camera-entity-id: func () -> u32;
+        /// Resets the player's camera back to their own perspective.
+        reset-camera: func ();
+
+        // Audio & Particles
+
+        /// Plays a sound effect for this player at their current location.
+        play-sound: func(sound: sound, category: sound-category, volume: f32, pitch: f32);
+        /// Plays a sound effect for this player at a specific location.
+        play-sound-at: func(pos: position, sound: sound, category: sound-category, volume: f32, pitch: f32);
+        /// Stops a sound effect from playing for this player.
+        stop-sound: func(sound: option<sound>, category: option<sound-category>);
+
+        /// Plays a custom resource pack sound identifier for this player at their current location.
+        play-custom-sound: func(sound-name: string, category: sound-category, volume: f32, pitch: f32);
+        /// Plays a custom resource pack sound identifier for this player at a specific location.
+        play-custom-sound-at: func(pos: position, sound-name: string, category: sound-category, volume: f32, pitch: f32);
+        /// Stops a custom sound identifier from playing for this player.
+        stop-custom-sound: func(sound-name: option<string>, category: option<sound-category>);
+
+        /// Spawns particles visible only to this player.
+        spawn-particles: func(particle: particle, pos: position, count: u32, offset: position, max-speed: f32);
+
+        // Visuals & Client Overrides
+
+        /// Sends a temporary fake block change to the player's client without modifying the server world.
+        send-block-change: func(pos: block-pos, block-id: u16);
+        /// Resets a temporary fake block change by resending the actual world block at that position.
+        reset-block-change: func(pos: block-pos);
+
+        /// Sends a hurt / damage-tilt animation to the player's client (causes screen shake in the given yaw direction).
+        send-hurt-animation: func(yaw: f32);
+
+        /// Opens a written book interface for the player from the specified hand.
+        open-book: func(hand: hand);
+        /// Forces the sign text editor to open for the player at the specified sign block position.
+        open-sign-editor: func(pos: block-pos, is-front-text: bool);
+
+        // Velocity & Physics
+
+        /// Sets the player's velocity / motion vector.
+        set-velocity: func(velocity: position);
+        /// Applies directional knockback impulse to the player.
+        apply-knockback: func(strength: f64, x: f64, z: f64);
+
+        // Movement Lock & Freezing
+
+        /// Sets whether the player's movement is locked (frozen in place) for cutscenes and NPC dialogues.
+        set-movement-locked: func(locked: bool);
+        /// Returns whether the player's movement is currently locked.
+        is-movement-locked: func() -> bool;
+
+        /// Sets the number of freeze ticks on the player (controlling the powdered snow / frostbite screen vignette).
+        set-freeze-ticks: func(ticks: s32);
+        /// Returns the current number of freeze ticks on the player.
+        get-freeze-ticks: func() -> s32;
+
+        /// Sends custom server links to the player (displayed in the client Esc pause menu in 1.21+).
+        set-server-links: func(links: list<server-link>);
 
         // Teleport & kick
 
@@ -1254,6 +1375,12 @@ interface player {
 
         /// Kicks the Java player with the specified options.
         kick: func(options: java-kick-options);
+
+        /// Sends a clientbound GameEvent packet to the Java player.
+        send-game-event: func(event: client-game-event, value: f32);
+
+        /// Sends an entity status / animation event packet to the Java player for a specific entity ID.
+        send-entity-status: func(entity-id: s32, status: entity-status);
     }
 
     /// A handle to a player connected via the Bedrock Edition.

@@ -34,6 +34,17 @@ interface java-packets {
   record config-s-config-pong {
     id: s32,
   }
+  variant resource-pack-response-result {
+    download-success,
+    download-fail,
+    downloaded,
+    accepted,
+    declined,
+    invalid-url,
+    reload-failed,
+    discarded,
+    unknown(s32),
+  }
   record config-s-config-resource-pack {
     uuid: uuid,
     %result: s32,
@@ -41,6 +52,10 @@ interface java-packets {
   record login-s-login-cookie-response {
     key: string,
     payload: option<list<u8>>,
+  }
+  record s-encryption-response {
+    shared-secret: list<u8>,
+    verify-token: list<u8>,
   }
   record login-s-login-start {
     name: string,
@@ -73,11 +88,15 @@ interface java-packets {
   record s-chat-command {
     command: string,
   }
+  record argument-signature {
+    name: string,
+    signature: list<u8>,
+  }
   record s-chat-command-signed {
     command: string,
     timestamp: s64,
     salt: s64,
-    argument-signatures: list<string>,
+    argument-signatures: list<argument-signature>,
     message-count: s32,
     acknowledged: list<u8>,
     checksum: u8,
@@ -99,10 +118,19 @@ interface java-packets {
     revision: s32,
     slot: s32,
     button: u8,
-    mode: string,
+    mode: slot-action-type,
     length-of-array: s32,
-    array-of-changed-slots: list<string>,
+    array-of-changed-slots: list<tuple<s32, string>>,
     carried-item: string,
+  }
+  enum slot-action-type {
+    pickup,
+    quick-move,
+    swap,
+    clone,
+    throw,
+    quick-craft,
+    pickup-all,
   }
   record s-client-command {
     action-id: s32,
@@ -123,6 +151,9 @@ interface java-packets {
   record s-command-suggestion {
     id: s32,
     command: string,
+  }
+  record s-confirm-teleport {
+    teleport-id: s32,
   }
   record s-container-button-click {
     window-id: s32,
@@ -166,6 +197,11 @@ interface java-packets {
     target-position: option<tuple<f64, f64, f64>>,
     hand: option<s32>,
     sneaking: bool,
+  }
+  enum action-type {
+    interact,
+    attack,
+    interact-at,
   }
   record s-jigsaw-generate {
     pos: tuple<s32, s32, s32>,
@@ -217,10 +253,31 @@ interface java-packets {
     face: u8,
     sequence: s32,
   }
+  enum status {
+    started-digging,
+    cancelled-digging,
+    finished-digging,
+    drop-item-stack,
+    drop-item,
+    release-item-in-use,
+    swap-item,
+    spear-jab,
+  }
   record s-player-command {
     entity-id: s32,
-    action: string,
+    action: action,
     jump-boost: s32,
+  }
+  enum action {
+    start-sneaking,
+    stop-sneaking,
+    leave-bed,
+    start-sprinting,
+    stop-sprinting,
+    start-horse-jump,
+    stop-horse-jump,
+    open-vehicle-inventory,
+    start-flying-elytra,
   }
   record s-set-player-ground {
     on-ground: bool,
@@ -263,6 +320,17 @@ interface java-packets {
   record s-rename-item {
     item-name: string,
   }
+  variant play-resource-pack-result {
+    download-success,
+    declined,
+    download-fail,
+    accepted,
+    downloaded,
+    invalid-url,
+    reload-failed,
+    discarded,
+    unknown(s32),
+  }
   record s-play-resource-pack {
     uuid: uuid,
     %result: s32,
@@ -284,6 +352,11 @@ interface java-packets {
     mode: s32,
     %flags: u8,
   }
+  enum command-block-mode {
+    chain,
+    repeating,
+    impulse,
+  }
   record s-set-command-minecart {
     entity-id: s32,
     command: string,
@@ -293,8 +366,12 @@ interface java-packets {
     slot: s32,
     clicked-item: string,
   }
+  record game-rule-entry {
+    game-rule-key: string,
+    value: string,
+  }
   record s-set-game-rule {
-    entries: list<string>,
+    entries: list<game-rule-entry>,
   }
   record s-set-held-item {
     slot: s32,
@@ -329,8 +406,14 @@ interface java-packets {
   }
   record s-set-test-block {
     position: tuple<s32, s32, s32>,
-    mode: string,
+    mode: test-block-mode,
     message: string,
+  }
+  enum test-block-mode {
+    start,
+    log,
+    fail,
+    accept,
   }
   record s-spectate-entity {
     target: uuid,
@@ -343,8 +426,36 @@ interface java-packets {
   }
   record s-test-instance-block-action {
     pos: tuple<s32, s32, s32>,
-    action: string,
-    data: string,
+    action: test-instance-block-action,
+    data: test-instance-block-data,
+  }
+  enum test-instance-block-action {
+    init,
+    query,
+    set,
+    reset,
+    save,
+    %export,
+    run,
+  }
+  record var-int-vector3 {
+    x: s32,
+    y: s32,
+    z: s32,
+  }
+  record test-instance-block-data {
+    test: option<string>,
+    size: var-int-vector3,
+    rotation: string,
+    ignore-entities: bool,
+    status: test-instance-block-status,
+    error-message: option<string>,
+  }
+  enum test-instance-block-status {
+    cleared,
+    running,
+    success,
+    failed,
   }
   record s-update-sign {
     location: tuple<s32, s32, s32>,
@@ -389,7 +500,7 @@ interface java-packets {
     key: string,
   }
   record config-c-config-custom-report-details {
-    details: list<string>,
+    details: list<tuple<string, string>>,
   }
   record config-c-feature-flags {
     features: list<string>,
@@ -431,8 +542,21 @@ interface java-packets {
   record login-c-login-cookie-request {
     key: string,
   }
+  record c-encryption-request {
+    server-id: string,
+    public-key: list<u8>,
+    verify-token: list<u8>,
+    should-authenticate: bool,
+  }
   record login-c-login-disconnect {
     json-reason: string,
+  }
+  record c-login-success {
+    uuid: uuid,
+    username: string,
+    properties: list<property>,
+    strict-error-handling: bool,
+    session-id: uuid,
   }
   record login-c-login-plugin-request {
     message-id: s32,
@@ -456,7 +580,12 @@ interface java-packets {
     prompt-message: option<string>,
   }
   record c-award-stats {
-    stats: list<string>,
+    stats: list<statistic>,
+  }
+  record statistic {
+    category-id: s32,
+    statistic-id: s32,
+    value: s32,
   }
   record c-set-block-destroy-stage {
     entity-id: s32,
@@ -480,7 +609,26 @@ interface java-packets {
   }
   record c-boss-event {
     uuid: uuid,
-    action: string,
+    action: bossevent-action,
+  }
+  record bossevent-action-add {
+    title: string,
+    health: f32,
+    color: s32,
+    division: s32,
+    %flags: u8,
+  }
+  record bossevent-action-update-style {
+    color: s32,
+    dividers: s32,
+  }
+  variant bossevent-action {
+    add(bossevent-action-add),
+    remove,
+    update-health(f32),
+    update-tile(string),
+    update-style(bossevent-action-update-style),
+    update-flags(u8),
   }
   record c-center-chunk {
     chunk-x: s32,
@@ -493,8 +641,13 @@ interface java-packets {
   record c-chunk-batch-end {
     batch-size: s32,
   }
+  record chunk-biome-entry {
+    chunk-x: s32,
+    chunk-z: s32,
+    data: list<u8>,
+  }
   record c-chunks-biomes {
-    chunks: list<string>,
+    chunks: list<chunk-biome-entry>,
   }
   record c-clear-title {
     reset: bool,
@@ -513,11 +666,145 @@ interface java-packets {
     id: s32,
     start: s32,
     length: s32,
-    matches: list<string>,
+    matches: list<command-suggestion>,
+  }
+  record command-suggestion {
+    suggestion: string,
+    tooltip: option<string>,
   }
   record c-commands {
-    nodes: list<string>,
+    nodes: list<proto-node>,
     root-node-index: s32,
+  }
+  record proto-node {
+    children: list<s32>,
+    node-type: proto-node-type,
+  }
+  record proto-node-type-literal {
+    name: string,
+    is-executable: bool,
+    redirect-target: option<s32>,
+    restricted: bool,
+  }
+  record proto-node-type-argument {
+    name: string,
+    is-executable: bool,
+    redirect-target: option<s32>,
+    parser: argument-type,
+    override-suggestion-type: option<suggestion-providers>,
+    restricted: bool,
+  }
+  variant proto-node-type {
+    root,
+    literal(proto-node-type-literal),
+    argument(proto-node-type-argument),
+  }
+  record argument-type-float {
+    min: option<f32>,
+    max: option<f32>,
+  }
+  record argument-type-double {
+    min: option<f64>,
+    max: option<f64>,
+  }
+  record argument-type-integer {
+    min: option<s32>,
+    max: option<s32>,
+  }
+  record argument-type-long {
+    min: option<s64>,
+    max: option<s64>,
+  }
+  record argument-type-entity {
+    %flags: u8,
+  }
+  record argument-type-score-holder {
+    %flags: u8,
+  }
+  record argument-type-time {
+    min: s32,
+  }
+  record argument-type-resource-or-tag {
+    identifier: string,
+  }
+  record argument-type-resource-or-tag-key {
+    identifier: string,
+  }
+  record argument-type-resource {
+    identifier: string,
+  }
+  record argument-type-resource-key {
+    identifier: string,
+  }
+  variant argument-type {
+    %bool,
+    float(argument-type-float),
+    double(argument-type-double),
+    integer(argument-type-integer),
+    long(argument-type-long),
+    %string(string-proto-arg-behavior),
+    entity(argument-type-entity),
+    game-profile,
+    block-pos,
+    column-pos,
+    vec3,
+    vec2,
+    block-state,
+    block-predicate,
+    item-stack,
+    item-predicate,
+    color,
+    hex-color,
+    component,
+    style,
+    message,
+    nbt-compound,
+    nbt-tag,
+    nbt-path,
+    objective,
+    objective-criteria,
+    operation,
+    particle,
+    angle,
+    rotation,
+    scoreboard-slot,
+    score-holder(argument-type-score-holder),
+    swizzle,
+    team,
+    item-slot,
+    item-slots,
+    resource-location,
+    function,
+    entity-anchor,
+    int-range,
+    float-range,
+    dimension,
+    gamemode,
+    time(argument-type-time),
+    resource-or-tag(argument-type-resource-or-tag),
+    resource-or-tag-key(argument-type-resource-or-tag-key),
+    %resource(argument-type-resource),
+    resource-key(argument-type-resource-key),
+    resource-selector,
+    template-mirror,
+    template-rotation,
+    heightmap,
+    loot-table,
+    loot-predicate,
+    loot-modifier,
+    dialog,
+    uuid,
+  }
+  enum string-proto-arg-behavior {
+    single-word,
+    quotable-phrase,
+    greedy-phrase,
+  }
+  enum suggestion-providers {
+    ask-server,
+    all-recipes,
+    available-sounds,
+    summonable-entities,
   }
   record c-play-cookie-request {
     key: string,
@@ -531,7 +818,7 @@ interface java-packets {
     data: list<u8>,
   }
   record c-play-custom-report-details {
-    details: list<string>,
+    details: list<tuple<string, string>>,
   }
   record c-damage-event {
     entity-id: s32,
@@ -546,7 +833,7 @@ interface java-packets {
     value: string,
   }
   record c-debug-chunk-value {
-    chunk-pos: string,
+    chunk-pos: tuple<f64, f64>,
     name: string,
     value: string,
   }
@@ -584,9 +871,24 @@ interface java-packets {
     entity-id: s32,
     animation: u8,
   }
+  enum animation {
+    swing-main-arm,
+    leave-bed,
+    swing-offhand,
+    critical-effect,
+    magic-criticaleffect,
+  }
   record c-set-entity-metadata {
     entity-id: s32,
     metadata: list<u8>,
+  }
+  record c-entity-position-sync {
+    entity-id: s32,
+    position: tuple<f64, f64, f64>,
+    delta: tuple<f64, f64, f64>,
+    yaw: f32,
+    pitch: f32,
+    on-ground: bool,
   }
   record c-entity-sound-effect {
     sound-event: string,
@@ -617,8 +919,24 @@ interface java-packets {
     event: u8,
     value: f32,
   }
+  enum game-event {
+    no-respawn-block-available,
+    begin-raining,
+    end-raining,
+    change-game-mode,
+    win-game,
+    demo-event,
+    arrow-hit-player,
+    rain-level-change,
+    thunder-level-change,
+    play-pufferfish-string-sound,
+    play-elder-guardian-mob-appearance,
+    enabled-respawn-screen,
+    limited-crafting,
+    start-waiting-chunks,
+  }
   record c-game-rule-values {
-    rules: list<string>,
+    rules: list<tuple<string, string>>,
   }
   record c-game-test-highlight-pos {
     pos: tuple<s32, s32, s32>,
@@ -660,7 +978,16 @@ interface java-packets {
   record c-light-update {
     chunk-x: s32,
     chunk-z: s32,
-    light-data: string,
+    light-data: light-data,
+  }
+  record light-data {
+    trust-edges: bool,
+    sky-light-mask: list<s64>,
+    block-light-mask: list<s64>,
+    empty-sky-light-mask: list<s64>,
+    empty-block-light-mask: list<s64>,
+    sky-light-arrays: list<list<u8>>,
+    block-light-arrays: list<list<u8>>,
   }
   record c-login {
     entity-id: s32,
@@ -672,7 +999,7 @@ interface java-packets {
     reduced-debug-info: bool,
     enabled-respawn-screen: bool,
     limited-crafting: bool,
-    spawn-data: string,
+    spawn-data: player-spawn-data,
     online-mode: bool,
     enforce-secure-chat: bool,
   }
@@ -681,20 +1008,53 @@ interface java-packets {
     scale: u8,
     tracking-position: bool,
     locked: bool,
-    icons: option<list<string>>,
-    data: option<string>,
+    icons: option<list<map-icon>>,
+    data: option<map-patch>,
+  }
+  record map-icon {
+    icon-type: s32,
+    x: u8,
+    z: u8,
+    direction: u8,
+    display-name: option<string>,
+  }
+  record map-patch {
+    columns: u8,
+    rows: u8,
+    x: u8,
+    z: u8,
+    data: list<u8>,
+  }
+  record merchant-offer {
+    base-cost-a: string,
+    output: string,
+    cost-b: option<string>,
+    reward-exp: bool,
+    uses: s32,
+    max-uses: s32,
+    xp: s32,
+    special-price: s32,
+    price-multiplier: f32,
+    demand: s32,
   }
   record c-merchant-offers {
     window-id: s32,
-    offers: list<string>,
+    offers: list<merchant-offer>,
     villager-level: s32,
     experience: s32,
     is-regular-villager: bool,
     can-restock: bool,
   }
+  record minecart-step {
+    position: tuple<f64, f64, f64>,
+    movement: tuple<f64, f64, f64>,
+    yaw: f32,
+    pitch: f32,
+    weight: f32,
+  }
   record c-move-minecart-along-track {
     entity-id: s32,
-    steps: list<string>,
+    steps: list<minecart-step>,
   }
   record c-move-vehicle {
     x: f64,
@@ -704,8 +1064,9 @@ interface java-packets {
     pitch: f32,
   }
   record c-multi-block-update {
-    chunk-section: s64,
-    updates: list<s64>,
+    chunk-section: tuple<f64, f64, f64>,
+    suppress-light-updates: bool,
+    updates: list<tuple<tuple<s32, s32, s32>, string>>,
   }
   record c-open-book {
     hand: s32,
@@ -749,6 +1110,26 @@ interface java-packets {
     flying-speed: f32,
     field-of-view: f32,
   }
+  record player-action-add-player {
+    name: string,
+    properties: list<property>,
+  }
+  variant player-action {
+    add-player(player-action-add-player),
+    initialize-chat(option<init-chat>),
+    update-game-mode(s32),
+    update-listed(bool),
+    update-latency(s32),
+    update-display-name(option<string>),
+    update-list-order(s32),
+    update-hat(bool),
+  }
+  record init-chat {
+    session-id: uuid,
+    expires-at: s64,
+    public-key: list<u8>,
+    signature: list<u8>,
+  }
   record c-player-chat-message {
     global-index: s32,
     sender: uuid,
@@ -757,23 +1138,36 @@ interface java-packets {
     message: string,
     timestamp: s64,
     salt: s64,
-    previous-messages: list<string>,
+    previous-messages: list<previous-message>,
     unsigned-content: option<string>,
-    filter-type: string,
+    filter-type: filter-type,
     chat-type: s32,
     sender-name: string,
     target-name: option<string>,
   }
+  record previous-message {
+    id: s32,
+    signature: option<list<u8>>,
+  }
+  variant filter-type {
+    pass-through,
+    fully-filtered,
+    partially-filtered(list<s64>),
+  }
   record c-player-info-update {
     actions: u8,
-    players: list<string>,
+    players: list<player>,
+  }
+  record player {
+    uuid: uuid,
+    actions: list<player-action>,
   }
   record c-player-look-at {
     from-anchor: s32,
     target-x: f64,
     target-y: f64,
     target-z: f64,
-    entity: option<string>,
+    entity: option<tuple<s32, s32>>,
   }
   record c-player-position {
     teleport-id: s32,
@@ -789,6 +1183,17 @@ interface java-packets {
   record c-player-rotation {
     yaw: f32,
     pitch: f32,
+  }
+  record player-spawn-data {
+    dimension: string,
+    hashed-seed: s64,
+    game-mode: u8,
+    previous-gamemode: u8,
+    debug: bool,
+    is-flat: bool,
+    death-dimension-name: option<tuple<string, tuple<s32, s32, s32>>>,
+    portal-cooldown: s32,
+    sealevel: s32,
   }
   record c-player-spawn-position {
     dimension-name: string,
@@ -833,7 +1238,7 @@ interface java-packets {
     objective-name: option<string>,
   }
   record c-respawn {
-    player-spawn-info: string,
+    player-spawn-info: player-spawn-data,
     data-kept: u8,
   }
   record c-select-advancements-tab {
@@ -897,7 +1302,7 @@ interface java-packets {
   }
   record c-set-equipment {
     entity-id: s32,
-    equipment: list<string>,
+    equipment: list<tuple<u8, string>>,
   }
   record c-set-experience {
     progress: f32,
@@ -909,6 +1314,9 @@ interface java-packets {
     food: s32,
     food-saturation: f32,
   }
+  record c-set-selected-slot {
+    slot: u8,
+  }
   record c-set-passengers {
     entity-id: s32,
     passengers: list<s32>,
@@ -917,10 +1325,26 @@ interface java-packets {
     slot: s32,
     item: string,
   }
+  enum team-method {
+    create,
+    remove,
+    update,
+    add-players,
+    remove-players,
+  }
+  record team-parameters {
+    display-name: string,
+    options: u8,
+    nametag-visibility: string,
+    collision-rule: string,
+    color: s32,
+    player-prefix: string,
+    player-suffix: string,
+  }
   record c-set-player-team {
     team-name: string,
-    method: string,
-    parameters: option<string>,
+    method: team-method,
+    parameters: option<team-parameters>,
     players: list<string>,
   }
   record c-set-simulation-distance {
@@ -928,7 +1352,7 @@ interface java-packets {
   }
   record c-update-time {
     game-time: s64,
-    clock-updates: list<string>,
+    clock-updates: list<tuple<s32, s64, f32, f32>>,
   }
   record c-title-text {
     title: string,
@@ -990,6 +1414,10 @@ interface java-packets {
   record c-subtitle {
     subtitle: string,
   }
+  record c-system-chat-message {
+    content: string,
+    overlay: bool,
+  }
   record c-tab-list {
     header: string,
     footer: string,
@@ -1041,7 +1469,17 @@ interface java-packets {
   }
   record c-update-attributes {
     entity-id: s32,
-    properties: list<string>,
+    properties: list<property>,
+  }
+  record property {
+    id: s32,
+    value: f64,
+    modifiers: list<attribute-modifier>,
+  }
+  record attribute-modifier {
+    id: string,
+    amount: f64,
+    operation: u8,
   }
   record c-update-entity-pos {
     entity-id: s32,
@@ -1075,6 +1513,15 @@ interface java-packets {
     render-type: s32,
     number-format: option<string>,
   }
+  enum mode {
+    add,
+    remove,
+    update,
+  }
+  enum render-type {
+    integer,
+    hearts,
+  }
   record c-update-recipes {
     raw-data: list<u8>,
   }
@@ -1085,13 +1532,40 @@ interface java-packets {
     display-name: option<string>,
     number-format: option<string>,
   }
+  record c-update-tags-play {
+    tags: list<string>,
+  }
   record c-use-bed {
     entity-id: s32,
     location: tuple<s32, s32, s32>,
   }
+  enum waypoint-operation {
+    track,
+    untrack,
+    update,
+  }
+  record waypoint-target-chunk {
+    x: s32,
+    z: s32,
+  }
+  variant waypoint-target {
+    position(tuple<s32, s32, s32>),
+    chunk(waypoint-target-chunk),
+    azimuth(f32),
+    empty,
+  }
+  record waypoint-icon {
+    style: option<string>,
+    color: s32,
+  }
+  record tracked-waypoint {
+    identifier: uuid,
+    icon: option<waypoint-icon>,
+    target: waypoint-target,
+  }
   record c-waypoint {
-    operation: string,
-    waypoint: string,
+    operation: waypoint-operation,
+    waypoint: tracked-waypoint,
   }
   record c-world-event {
     event: s32,

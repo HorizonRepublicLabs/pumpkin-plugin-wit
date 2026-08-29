@@ -71,6 +71,12 @@ world plugin {
     import display;
     /// Provides game rules definitions and queries.
     import game-rules;
+    /// Provides game event types.
+    import game-events;
+    /// Provides potion types.
+    import potions;
+    /// Provides entity status / animation event types.
+    import entity-statuses;
 
     // --- Plugin-provided exports ---
 
