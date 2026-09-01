@@ -1,6 +1,19 @@
 package pumpkin:plugin@0.1.0;
 
 interface sounds {
+  enum sound-category {
+    master,
+    music,
+    records,
+    weather,
+    blocks,
+    hostile,
+    neutral,
+    players,
+    ambient,
+    voice,
+    ui,
+  }
   enum sound {
     entity-allay-ambient-with-item,
     entity-allay-ambient-without-item,

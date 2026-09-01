@@ -4,7 +4,7 @@ interface %world {
     use text.{text-component};
     use scoreboard.{scoreboard};
     use particles.{particle};
-    use sounds.{sound};
+    use sounds.{sound, sound-category};
     use entity-types.{entity-type};
     use biomes.{biome};
     use attributes.{attribute, modifier-operation, attribute-modifier};
@@ -222,20 +222,6 @@ interface %world {
         zombie(zombie-data),
         shulker(shulker-data),
         generic,
-    }
-
-    /// Categories for sounds to control their volume independently.
-    enum sound-category {
-        master,
-        music,
-        records,
-        weather,
-        blocks,
-        hostile,
-        neutral,
-        players,
-        ambient,
-        voice,
     }
 
     /// Defines how an explosion interacts with blocks in the world.
@@ -618,6 +604,11 @@ interface %world {
         /// Sets the specialized mob-specific data for this mob.
         /// Returns false if the provided data variant is incompatible with this mob.
         set-mob-data: func(data: mob-data) -> bool;
+
+        /// Sets the number of freeze ticks on this entity (0 to 140).
+        set-freeze-ticks: func(ticks: s32);
+        /// Returns the number of freeze ticks currently on this entity.
+        get-freeze-ticks: func() -> s32;
     }
 
     /// Result of a raycast operation.
@@ -875,6 +866,9 @@ interface %world {
 
         /// Plays a sound at the specified position for all players in the world.
         play-sound: func(sound: sound, category: sound-category, pos: position, volume: f32, pitch: f32);
+
+        /// Plays a custom resource pack sound identifier at the specified position for all players in the world.
+        play-custom-sound: func(sound-name: string, category: sound-category, pos: position, volume: f32, pitch: f32);
 
         /// Spawns particles at the specified position.
         spawn-particle: func(particle: particle, pos: position, offset: position, max-speed: f32, count: s32);

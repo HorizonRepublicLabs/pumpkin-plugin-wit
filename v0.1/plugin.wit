@@ -73,6 +73,12 @@ world plugin {
     import game-rules;
     /// Provides registration of custom blocks, items and entity types.
     import registry;
+    /// Provides game event types.
+    import game-events;
+    /// Provides potion types.
+    import potions;
+    /// Provides entity status / animation event types.
+    import entity-statuses;
 
     // --- Plugin-provided exports ---
 

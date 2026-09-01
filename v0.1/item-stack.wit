@@ -1,6 +1,7 @@
 interface item-stack {
+    use attributes.{attribute, attribute-modifier};
     use data-components.{data-component};
-    use enchantments.{enchantment};
+    use enchantments.{attribute-modifier-slot, enchantment};
     use text.{text-component};
 
     /// Represents an enchantment and its level.
@@ -13,6 +14,13 @@ interface item-stack {
     record custom-enchantment-value {
         enchantment-id: string,
         level: u32,
+    }
+
+    /// Represents an attribute modifier applied to an item stack for a specific slot.
+    record item-attribute-modifier {
+        attribute: attribute,
+        modifier: attribute-modifier,
+        slot: attribute-modifier-slot,
     }
 
     /// Represents a data component and its serialized value.
@@ -55,6 +63,15 @@ interface item-stack {
         get-custom-enchantment-level: func(enchantment-id: string) -> option<u32>;
         /// Returns whether this item stack has a specific custom enchantment.
         has-custom-enchantment: func(enchantment-id: string) -> bool;
+
+        /// Returns all attribute modifiers on this item stack.
+        get-attribute-modifiers: func() -> list<item-attribute-modifier>;
+        /// Adds an attribute modifier to this item stack.
+        add-attribute-modifier: func(modifier: item-attribute-modifier);
+        /// Removes all attribute modifiers for a specific attribute from this item stack.
+        remove-attribute-modifiers: func(attribute: attribute);
+        /// Clears all custom attribute modifiers from this item stack.
+        clear-attribute-modifiers: func();
 
         /// Returns the lore of this item stack.
         get-lore: func() -> list<text-component>;
